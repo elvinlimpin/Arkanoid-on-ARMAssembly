@@ -13,14 +13,18 @@
 .global makePx
 
 makePx:
-	PUSH	{r4, r5, r6}
+	PUSH	{r4-r9, lr}
 
 	offset	.req	r4
 	frame	.req	r5
 	width	.req	r6
-	xval	.req	r0
-	yval	.req	r1
-	color	.req	r2
+	xval	.req	r7
+	yval	.req	r8
+	color	.req	r9
+
+	MOV	xval, r0
+	MOV	yval, r1
+	MOV	color, r2
 
 	LDR	frame, =frameBufferInfo
 	LDR	width, [frame, #4]
@@ -33,7 +37,7 @@ makePx:
 	LDR	r3, [r5]
 	STR	color, [r3, offset]
 
-	POP	{r4, r5, r6}
+	POP	{r4-r9, lr}
 	MOV	pc, lr
 
 

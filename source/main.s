@@ -20,11 +20,14 @@ main:
 	BL	Init_SNES
 	BL	Init_Frame
 
-	MOV	r0, #200
-	MOV	r1, #200
-	MOV	r2, #0xFFFFFF
+	MOV	r0, #0
+	MOV	r1, #0
 
-	BL	makePx
+	makeLoop:	MOV	r2, #0xFFFFFF
+			BL	makePx
+			ADD	r0, #1
+			CMP	r0, #200
+			BLT	makeLoop
 
 	BL	terminate
 
