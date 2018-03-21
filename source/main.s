@@ -55,6 +55,9 @@ main:
 		.int 0		// frame buffer pointer
 		.int 0		// screen width
 		.int 0		// screen height
+		
+	.align 4	
+	font: .incbin "font.bin" //font is base address of font map
 
 .global gpioBaseAddress
 gpioBaseAddress:
