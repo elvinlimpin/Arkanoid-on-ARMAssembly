@@ -1,0 +1,49 @@
+//r0= address of image data
+//r1=image width
+//r2=image length
+.section	.text
+.global drawTile
+drawTile:
+
+	push	{r4-r9, lr}
+	
+	address	.req	r5
+	width	.req	r6
+	length	.req	r7
+	x	.req	r8
+	y	.req	r9
+	offset	.req	r4
+	
+	//intialize offset, x and y to 0
+	mov		x, #0
+	mov		y, #0
+	mov		offset, #0
+	
+	mov	address, r0
+	
+tileloop:
+
+    //draw a pixel
+    mov r0, x
+    mov r1, y
+    ldr r3, [address, offset]
+    bl  DrawPx
+    
+    add	offset, offset, #4
+    add x, x, #1
+    
+    cmp x, width
+    MOVEQ x, #0
+    ADDEQ y, y, #1
+    
+    cmp y, length
+    BLE tileloop
+
+  	.unreq	address
+	.unreq	width
+	.unreq	length
+	.unreq	x
+	.unreq	y
+	.unreq	offset
+    
+    pop		{r4-r9, pc}
