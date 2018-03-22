@@ -37,7 +37,7 @@ rowLoop$:
 	mov		r0, px
 	mov		r1, py
 	mov		r2, colour	
-	bl		DrawPixel		@ draw pixel at (px, py)
+	bl		drawPx		@ draw pixel at (px, py)
 
 noPixel$:
 	add		px, px, #1			@ increment x coordinate by 1
