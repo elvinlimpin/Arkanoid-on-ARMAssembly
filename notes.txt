@@ -1,0 +1,48 @@
+.constant
+OBJREF  0x40
+.end-constant
+
+.main
+
+.var
+.end-var
+
+start:  LDC_W OBJREF
+        BIPUSH  5
+         INVOKE VIRTUAL fibb
+         
+.method fibb(n)
+
+.var
+.end-var
+
+fibb:
+    // branch to returnOne if (n - 2) < 0 ( like n == 0 or 1)
+    ILOAD     n
+     BIPUSH   0x02
+     ISUB
+     IFLT     returnOne
+     
+     LDC_W  OBJREF
+     ILOAD  n
+      BIPUSH  0x01
+       ISUB
+     
+     INVOKEVIRTUAL fibb
+     
+     LDC_W  OBJREF
+     
+     ILOAD  n
+     BIPUSH 0x02
+     ISUB
+     
+     INVOKEVIRTUAL  fibb
+     
+     IADD
+     IRETURN
+     
+ returnOne:
+    BIPUSH  0x01
+    IRETURN
+    
+.endMethod
