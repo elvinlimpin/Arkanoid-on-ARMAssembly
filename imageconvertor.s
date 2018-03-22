@@ -38,7 +38,7 @@ tileloop:
     ADDEQ y, y, #1
     
     cmp y, length
-    BLE tileloop
+    BLT tileloop
 
   	.unreq	address
 	.unreq	width
