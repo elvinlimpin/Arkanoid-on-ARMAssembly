@@ -3,8 +3,8 @@
 	gBase	.req	r9
 
 // functions \\
-.global	Init_SNES
-	Init_SNES:
+.global	initSNES
+	initSNES:
 		PUSH	{lr}
 		BL	getGpioPtr		// load base address
 		LDR	r1, =gpioBaseAddress	// load to variable
@@ -24,12 +24,10 @@
 		MOV	r1, #0b001		// as output
 		BL	Init_GPIO		// set
 
-		POP	{lr}
-		MOV	pc, lr
+		POP	{pc}
 
-
-.global Read_SNES
-	Read_SNES:
+.global readSNES
+	readSNES:
 		PUSH	{r7, r8, lr}
 		btns	.req	r8
 
@@ -52,13 +50,13 @@
 		MOV	inc, #0			// increment
 
 		pulseLoop:
-			MOV	r0, #600
+			MOV	r0, #2000
 			BL	delayMicroseconds
 
 			MOV	r0, #0		// rise edge
 			BL	Write_Clock
 
-			MOV	r0, #600
+			MOV	r0, #2000
 			BL	delayMicroseconds
 
 			BL	Read_Data
@@ -75,8 +73,7 @@
 			BLT	pulseLoop
 
 		MOV	r0, btns		// return buttons
-		POP	{r7, r8, lr}
-		MOV	pc, lr
+		POP	{r7, r8, pc}
 
 	.unreq	inc
 	.unreq	btns
@@ -144,8 +141,7 @@
 		MOVNE	r0, #59999	// delay to make button printing smoother
 		BLNE	delayMicroseconds	// if not printing
 
-		POP	{r4, lr}
-		MOV	pc, lr
+		POP	{r4, pc}
 
 		.unreq	notNull
 
@@ -154,7 +150,7 @@
 		// r0: GPIO number
 		// r1: function code
 
-		PUSH	{r4, r5}		// store vars in stack
+		PUSH	{r4, r5, lr}		// store vars in stack
 
 		toAdd	.req	r3		// name r3 immediate scratch value
 		fSel	.req	r4		// name r4 function select
@@ -181,10 +177,9 @@
 		ORR	fSel, r1		// apply function code
 		STR	fSel, [gBase, toAdd]	// store back to gBase
 
-		POP	{r4, r5}
+		POP	{r4, r5, pc}
 		.unreq	fSel			// unset register names
 		.unreq	toAdd
-		MOV	pc, lr	//RET
 
 
 
