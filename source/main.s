@@ -20,14 +20,12 @@ main:
 	BL	Init_SNES
 	BL	Init_Frame
 
-	MOV	r0, #0
-	MOV	r1, #0
-
-	makeLoop:	MOV	r2, #0xFFFFFF
-			BL	makePx
-			ADD	r0, #1
-			CMP	r0, #200
-			BLT	makeLoop
+	MOV	r0, #200	// x
+	MOV	r1, #100	// y
+	MOV	r2, #0xFF0000	// color
+	MOV	r3, #200	// length
+	MOV	r4, #100	// height
+	BL	makeTile
 
 	BL	terminate
 
@@ -55,8 +53,8 @@ main:
 		.int 0		// frame buffer pointer
 		.int 0		// screen width
 		.int 0		// screen height
-		
-	.align 4	
+
+	.align 4
 	font: .incbin "font.bin" //font is base address of font map
 
 .global gpioBaseAddress
