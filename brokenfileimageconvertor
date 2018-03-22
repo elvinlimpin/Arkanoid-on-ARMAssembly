@@ -21,6 +21,9 @@ drawTile:
 	
 	mov	address, r0
 	
+	mov	width,	r1
+	mov	length,	r2
+	
 tileloop:
 
     //draw a pixel
