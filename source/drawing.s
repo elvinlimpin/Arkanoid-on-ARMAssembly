@@ -250,7 +250,12 @@ drawInBrick:
 
 	MOV	r0, xpos
 	MOV	r1, ypos
-	MOV	r2, colorCode
+
+	MOV	colorCode, #0
+	CMP	colorCode, #1
+	LDREQ	r2, =cYellow
+	LDRGT	r2, =cGreen
+	LDRLT	r2, =cWhite
 
 	BL	makeTile
 

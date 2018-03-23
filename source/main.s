@@ -22,7 +22,6 @@ main:
 	BL	initSNES
 	BL	Init_Frame
 
-initMenu:
 	MOV r4, #0 //initial state is 0
 	B	startMenuLoop
 
@@ -203,11 +202,12 @@ outerBrickLoop:
 	PUSH	{r4-r9, lr}
 	MOV	r4, #0		// x position
 	MOV	r5, #0		// y position
+	MOV	r6, #0
 
 	brickLoop:
 		MOV	r0, r4
 		MOV	r1, r5
-		LDR	r2, =c2
+		MOV	r2, r6
 		BL	drawBrick
 		ADD	r4, r4, #1
 		CMP	r4, #9
@@ -215,6 +215,7 @@ outerBrickLoop:
 
 	MOV	r4, #0
 	ADD	r5, r5, #1
+	MOV	r6, #1
 	CMP	r5, #5
 	BLE	brickLoop
 
@@ -225,6 +226,11 @@ $:	PUSH	{r0-r3, lr}
 	LDR	r0, =log$
 	BL	printf
 	POP	{r0-r3, pc}
+
+
+initMenu:
+	
+
 
 .section .data
 	scoreChar:	.asciz		"SCORE: "
