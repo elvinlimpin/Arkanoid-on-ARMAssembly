@@ -50,13 +50,13 @@
 		MOV	inc, #0			// increment
 
 		pulseLoop:
-			MOV	r0, #2000
+			MOV	r0, #1500
 			BL	delayMicroseconds
 
 			MOV	r0, #0		// rise edge
 			BL	Write_Clock
 
-			MOV	r0, #2000
+			MOV	r0, #1500
 			BL	delayMicroseconds
 
 			BL	Read_Data

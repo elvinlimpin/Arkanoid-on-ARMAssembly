@@ -16,30 +16,60 @@ main:
 	LDR	r0, =msgCreator		// get the creator
 	BL	printf
 
-//cell 32x32
-
 	// Get GPIO base address
 	// Store in memory for future use
 	// Store base in variable
 	BL	initSNES
 	BL	Init_Frame
 
-	MOV	r0, #20
-	MOV	r1, #20
-	LDR	r2, =cIndigo
-	MOV	r3, #720
-	MOV	r4, #480
+	// Back
+	MOV	r0, #4
+	MOV	r1, #4
+	MOV	r2, #0x0
+	MOV	r3, #704
+	MOV	r4, #960
 	BL	makeTile
 
-	MOV	r0, #270	// x
-	MOV	r1, #420	// y
-	MOV	r2, #0xFF0000	// color
-	MOV	r3, #180	// length
-	MOV	r4, #16		// height
+	// foreground
+	MOV	r0, #4
+	MOV	r1, #4
+	LDR	r2, =cIndigo
+	MOV	r3, #720
+	MOV	r4, #896
+//	BL	makeTile
+
+	//walls
+	MOV	r0, #4
+	MOV	r1, #4
+	MOV	r2, #0x007770
+	MOV	r3, #31
+	MOV	r4, #960
+	BL	makeTile
+
+	MOV	r0, #677
+	MOV	r1, #4
+	MOV	r2, #0x007770
+	MOV	r3, #32
+	MOV	r4, #960
+	BL	makeTile
+
+	MOV	r0, #4
+	MOV	r1, #4
+	MOV	r2, #0x007770
+	MOV	r3, #704
+	MOV	r4, #32
+	BL	makeTile
+
+	// paddle
+	MOV	r0, #228	// x
+	MOV	r1, #772	// y
+	MOV	r2, #0x880000	// color
+	MOV	r3, #192	// length
+	MOV	r4, #32		// height
 	BL	makeTile
 
 	BL	drawScore
-
+	BL	outerBrickLoop
 	BL	paddle
 
 	BL	terminate
@@ -63,20 +93,17 @@ drawScore:
 	// r3 - color
 
 	LDR	r0, =scoreChar
-	MOV	r1, #32
-	MOV	r2, #450
+	MOV	r1, #68
+	MOV	r2, #932
 	LDR	r3, =cWhite
 	BL	drawWord
 	POP	{pc}
 
 paddle:
 	PUSH	{r4-r9, lr}
-	MOV	r8, #270	// default xstart
+	MOV	r8, #228	// default xstart
 
 	paddleLoop:
-		MOV	r0, #2000
-		BL	delayMicroseconds
-
 			LDR	r0, =log
 			MOV	r1, r8
 			BL	printf
@@ -88,51 +115,54 @@ paddle:
 		BNE	paddleLoop
 
 		// move Right
-		CMP	r8, #540
-		BGT	paddleLoop
+		CMP	r8, #484
+		BGE	paddleLoop
 
+			//repaint
+			MOV	r0, r8
+			MOV	r1, #772
+			MOV	r2, #0x0
+			MOV	r3, #32
+			MOV	r4, #32
+			BL	makeTile
 
-		MOV	r0, r8
-		MOV	r1, #420
-		LDR	r2, =cIndigo
-		MOV	r3, #8
-		MOV	r4, #16
-		BL	makeTile
+			//paddle
+ 			MOV	r0, r8
+			ADD	r0, r0, #32
+			MOV	r1, #772
+			MOV	r2, #0x8800000
+			MOV	r3, #192
+			BL	makeTile
 
- 		MOV	r0, r8
-		ADD	r0, #180
-		MOV	r1, #420
-		MOV	r2, #0xFF00000
-		MOV	r3, #8
-		BL	makeTile
+			ADD	r8, r8, #32
 
-		ADD	r8, r8, #8
-
-			LDR	r0, =log
-			MOV	r1, r8
-			BL	printf
+				LDR	r0, =log
+				MOV	r1, r8
+				BL	printf
 
 		BL	paddleLoop
 
 		moveLeft:
-			CMP	r8, #32
-			BLT	paddleLoop
+			CMP	r8, #36
+			BLE	paddleLoop
 
+			// repaint
 			MOV	r0, r8
-			ADD	r0, r0, #172
-			MOV	r1, #420
-			LDR	r2, =cIndigo
-			MOV	r3, #8
+			ADD	r0, r0, #160
+			MOV	r1, #772
+			MOV	r2, #0x0
+			MOV	r3, #32
 			BL	makeTile
 
+			//paddle
 			MOV	r0, r8
-			SUB	r0, r0, #8
-			MOV	r1, #420
-			MOV	r2, #0xFF00000
-			MOV	r3, #180
+			SUB	r0, r0, #32
+			MOV	r1, #772
+			MOV	r2, #0x8800000
+			MOV	r3, #192
 			BL	makeTile
 
-			SUB	r8,r8, #8
+			SUB	r8,r8, #32
 
 				LDR	r0, =log
 				MOV	r1, r8
@@ -142,7 +172,29 @@ paddle:
 
 	POP	{r4-r9, pc}
 
+outerBrickLoop:
+	PUSH	{r4-r9, lr}
+	MOV	r4, #0		// x position
+	MOV	r5, #0		// y position
+	MOV	r6, #2		// color code
 
+	brickLoop:
+		MOV	r0, r4
+		MOV	r1, r5
+		MOV	r2, r6
+		BL	drawBrick
+		ADD	r4, r4, #1
+		CMP	r4, #9
+		BLE	brickLoop
+
+	MOV	r4, #0
+	ADD	r5, r5, #1
+	CMP	r5, #5
+	BLE	brickLoop
+
+	POP	{r4-r9, pc}
+
+.global $
 $:	PUSH	{r0-r3, lr}
 	LDR	r0, =log$
 	BL	printf

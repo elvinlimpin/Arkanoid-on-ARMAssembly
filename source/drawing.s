@@ -102,7 +102,7 @@ makeTile:
 
 
 
-// Draw the character in r0 
+// Draw the character in r0
 // r1=x
 // r2=y
 // @r3=colour
@@ -183,12 +183,66 @@ drawWord:
 		ADD	r6, r6, #11
 		B	drawWordLoop
 
- 
-  @ Data section
+
+// r0 - brick x position
+// r1 - brick y position
+// r2 - brick type (0, 1, 2)
+.global drawBrick
+drawBrick:
+	PUSH	{r3-r7, lr}
+
+		xpos		.req	r5
+		ypos		.req	r6
+		colorCode	.req	r7
+
+		MOV	xpos, r0
+		MOV	ypos, r1
+		MOV	colorCode, r2
+
+			MOV	r3, #64
+			MOV	r4, #32
+
+			LSL	xpos, xpos, #6
+			ADD	xpos, #36
+			MOV	r0, xpos
+
+			LSL	ypos, ypos, #5
+			ADD	ypos, #64
+			MOV	r1, ypos
+
+			MOV	r2, #0x0
+			BL 	makeTile
+
+			ADD	xpos, xpos, #4
+			ADD	ypos, ypos, #4
+
+			MOV	r3, #56
+			MOV	r4, #24
+
+			CMP	colorCode, #1
+			LDRLT	r2, =cWhite
+			LDREQ	r2, =cYellow
+			LDRGT	r2, =cGreen
+
+
+			MOV	r0, xpos
+			MOV	r1, ypos
+			BL	makeTile
+
+		.unreq	xpos
+		.unreq	ypos
+		.unreq	colorCode
+	POP	{r3-r7, pc}
+
+// Data section
 .section .data
 
 .align 4
 font:		.incbin	"font.bin"
+
+cWhite:		.word 0xFFFFFF
+cYellow:	.word 0xFFFF00
+cGreen:		.word 0x00FF00
 
 .global frameBufferInfo
 frameBufferInfo:
