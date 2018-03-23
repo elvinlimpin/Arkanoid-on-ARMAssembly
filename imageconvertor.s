@@ -5,19 +5,17 @@
 .global drawTile
 drawTile:
 
-	push	{r4-r9, lr}
+	push	{r5-r9, lr}
 	
 	address	.req	r5
 	width	.req	r6
 	length	.req	r7
 	x	.req	r8
 	y	.req	r9
-	offset	.req	r4
-	
+
 	//intialize offset, x and y to 0
 	mov		x, #0
 	mov		y, #0
-	mov		offset, #0
 	
 	mov	address, r0
 	
@@ -29,10 +27,10 @@ tileloop:
     //draw a pixel
     mov r0, x
     mov r1, y
-    ldr r3, [address, offset]
-    bl  DrawPx
+    ldr r3, [address], #4
+    mov r2, r3
+    bl  drawPx
     
-    add	offset, offset, #4
     add x, x, #1
     
     cmp x, width
@@ -40,13 +38,12 @@ tileloop:
     ADDEQ y, y, #1
     
     cmp y, length
-    BLE tileloop
+    BLT tileloop
 
   	.unreq	address
 	.unreq	width
 	.unreq	length
 	.unreq	x
 	.unreq	y
-	.unreq	offset
     
-    pop		{r4-r9, pc}
+    pop		{r5-r9, pc}
