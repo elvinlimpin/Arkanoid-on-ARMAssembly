@@ -28,8 +28,9 @@
 
 .global readSNES
 	readSNES:
-		PUSH	{r7, r8, lr}
+		PUSH	{r6-r8, lr}
 		btns	.req	r8
+		MOV	r6, r0
 
 		MOV	btns, #0		// reset pushed buttons to 0
 
@@ -50,13 +51,13 @@
 		MOV	inc, #0			// increment
 
 		pulseLoop:
-			MOV	r0, #1500
+			MOV	r0, r6
 			BL	delayMicroseconds
 
 			MOV	r0, #0		// rise edge
 			BL	Write_Clock
 
-			MOV	r0, #1500
+			MOV	r0, r6
 			BL	delayMicroseconds
 
 			BL	Read_Data
@@ -73,7 +74,7 @@
 			BLT	pulseLoop
 
 		MOV	r0, btns		// return buttons
-		POP	{r7, r8, pc}
+		POP	{r6-r8, pc}
 
 	.unreq	inc
 	.unreq	btns

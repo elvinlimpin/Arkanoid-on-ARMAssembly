@@ -21,71 +21,57 @@ main:
 	// Store base in variable
 	BL	initSNES
 	BL	Init_Frame
-	
-	    mov r4, #0 //initial state is 0
-startmenuloop:
-MOV	r0, #2000
-	BL	delayMicroseconds
-    cmp r4, #0 //check state
-    mov r1, #720
-    mov r2, #960
-    ldreq	r0, =startselect
-    ldrne	r0, =quitselect
-    BL	drawTile
-    
-    BL	readSNES //check button press
-    
-    CMP	r0, #512		// L
-	MOVEQ r4, #0
-	CMP	r0, #256		// R
-	MOVEQ r4, #1
-	cmp r0, #128  		//A
-	BNE startmenuloop
-	
-	//branch based on state
-	cmp r4, #1
-	BNE startmenuloop
-    //insert code to clear screen here
-	B haltLoop$
-	
 
-	// Back
-	MOV	r0, #4
-	MOV	r1, #4
-	MOV	r2, #0x0
-	MOV	r3, #704
-	MOV	r4, #960
-	BL	makeTile
+initMenu:
+	MOV r4, #0 //initial state is 0
+	B	startMenuLoop
 
-	// foreground
-	MOV	r0, #4
-	MOV	r1, #4
-	LDR	r2, =cIndigo
-	MOV	r3, #720
-	MOV	r4, #896
-//	BL	makeTile
+	startMenuLoop:
+		BL	$
 
+	    	CMP 	r4, #0 //check state
+
+    		MOV 	r1, #720
+    		MOV 	r2, #960
+    		LDREQ	r0, =startselect
+    		LDRNE	r0, =quitselect
+
+		BL	drawTile
+
+		MOV	r0, #2000
+		BL	readSNES //check button press
+
+			CMP	r0, #512		// L
+			MOVEQ 	r4, #0
+			CMP	r0, #256		// R
+			MOVEQ	r4, #1
+			CMP	r0, #128  		//A
+
+		BNE startMenuLoop
+
+		//branch based on state
+		CMP	r4, #0
+		BNE	terminate
+
+	   //insert code to clear screen here
+
+makeGame:
 	//walls
 	MOV	r0, #4
 	MOV	r1, #4
 	MOV	r2, #0x007770
-	MOV	r3, #31
-	MOV	r4, #960
-	BL	makeTile
-
-	MOV	r0, #677
-	MOV	r1, #4
-	MOV	r2, #0x007770
-	MOV	r3, #32
-	MOV	r4, #960
-	BL	makeTile
-
-	MOV	r0, #4
-	MOV	r1, #4
-	MOV	r2, #0x007770
 	MOV	r3, #704
-	MOV	r4, #32
+	MOV	r4, #944
 	BL	makeTile
+
+	// foreground
+	MOV	r0, #36
+	MOV	r1, #36
+	MOV	r2, #0x0
+	MOV	r3, #640
+	MOV	r4, #880
+	BL	makeTile
+
 
 	// paddle
 	MOV	r0, #228	// x
@@ -121,7 +107,7 @@ drawScore:
 
 	LDR	r0, =scoreChar
 	MOV	r1, #68
-	MOV	r2, #932
+	MOV	r2, #864
 	LDR	r3, =cWhite
 	BL	drawWord
 	POP	{pc}
@@ -129,19 +115,33 @@ drawScore:
 paddle:
 	PUSH	{r4-r9, lr}
 	MOV	r8, #228	// default xstart
-
+	MOV	r7, #1750
 	paddleLoop:
 			LDR	r0, =log
 			MOV	r1, r8
 			BL	printf
 
+		MOV	r0, r7			// delay
 		BL	readSNES
+		MOV	r7, #1750
+
+		CMP	r0, #32768		// select
+		BEQ	initMenu
+
 		CMP	r0, #512		// L
 		BEQ	moveLeft
 		CMP	r0, #256		// R
+		BEQ	moveRight
+
+		CMP	r0, #640		// L + A
+		MOVEQ	r7, #750
+		BEQ	moveLeft
+
+		CMP	r0, #384		// R + A
+		MOVEQ	r7, #750
 		BNE	paddleLoop
 
-		// move Right
+		moveRight:
 		CMP	r8, #484
 		BGE	paddleLoop
 
@@ -203,12 +203,11 @@ outerBrickLoop:
 	PUSH	{r4-r9, lr}
 	MOV	r4, #0		// x position
 	MOV	r5, #0		// y position
-	MOV	r6, #2		// color code
 
 	brickLoop:
 		MOV	r0, r4
 		MOV	r1, r5
-		MOV	r2, r6
+		LDR	r2, =c2
 		BL	drawBrick
 		ADD	r4, r4, #1
 		CMP	r4, #9
@@ -244,11 +243,14 @@ $:	PUSH	{r0-r3, lr}
 	log:
 		.asciz			"log: %d\n"
 
-	cWhite:
+	cWhite:	c1:
 		.word	0xFFFFFFFF
 
-	cIndigo:
-		.word 0x4B0082FF
+	cIndigo: c2:
+		.word 	0x4B0082FF
+
+	cGreen: c3:
+		.word	0x00FF00
 
 	frameBufferInfo:
 		.int 0		// frame buffer pointer
