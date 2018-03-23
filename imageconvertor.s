@@ -29,7 +29,7 @@ tileloop:
     mov r1, y
     ldr r3, [address], #4
     mov r2, r3
-    bl  DrawPx
+    bl  drawPx
     
     add x, x, #1
     
