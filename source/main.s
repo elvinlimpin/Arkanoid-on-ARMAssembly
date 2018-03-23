@@ -21,6 +21,33 @@ main:
 	// Store base in variable
 	BL	initSNES
 	BL	Init_Frame
+	
+	    mov r4, #0 //initial state is 0
+startmenuloop:
+MOV	r0, #2000
+	BL	delayMicroseconds
+    cmp r4, #0 //check state
+    mov r1, #720
+    mov r2, #960
+    ldreq	r0, =startselect
+    ldrne	r0, =quitselect
+    BL	drawTile
+    
+    BL	readSNES //check button press
+    
+    CMP	r0, #512		// L
+	MOVEQ r4, #0
+	CMP	r0, #256		// R
+	MOVEQ r4, #1
+	cmp r0, #128  		//A
+	BNE startmenuloop
+	
+	//branch based on state
+	cmp r4, #1
+	BNE startmenuloop
+    //insert code to clear screen here
+	B haltLoop$
+	
 
 	// Back
 	MOV	r0, #4
