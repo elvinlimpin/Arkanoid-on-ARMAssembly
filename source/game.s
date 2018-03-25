@@ -51,22 +51,19 @@ initBricks:
 paddle:
 	PUSH	{r4-r9, lr}
 
-	// init Paddle
-	MOV	r0, #228	// x
-	MOV	r1, #772	// y
-	MOV	r2, #0x880000	// color
-	MOV	r3, #192	// length
-	MOV	r4, #32		// height
-	BL	makeTile
-
-	MOV	r8, #228	// default xstart
-	MOV	r7, #1750
+	BL	drawInitialPaddle
+	LDR	r8, =paddleStart // default xstart
+	LDR	r8, [r8]
+	MOV	r7, #1750	// pause length
 
 	paddleLoop:
-			LDR	r0, =log
-			MOV	r1, r8
-			BL	printf
+			LDR	r0, =scoreCount
+			STR	r8, [r0]
 
+		LDR	r8, =paddlePosition
+		LDR	r8, [r8]
+
+		BL	updateScoreAndLives
 		MOV	r0, r7			// delay
 		BL	readSNES
 		MOV	r7, #1750
@@ -88,7 +85,10 @@ paddle:
 		BNE	paddleLoop
 
 		moveRight:
-		CMP	r8, #484
+
+		LDR	r6, =paddleBound
+		LDR	r6, [r6]
+		CMP	r8, r6
 		BGE	paddleLoop
 
 			//repaint
@@ -104,14 +104,13 @@ paddle:
 			ADD	r0, r0, #32
 			MOV	r1, #772
 			MOV	r2, #0x8800000
-			MOV	r3, #192
+			LDR	r3, =paddleSize
+			LDR	r3, [r3]
 			BL	makeTile
 
 			ADD	r8, r8, #32
-
-				LDR	r0, =log
-				MOV	r1, r8
-				BL	printf
+			LDR	r6, =paddlePosition
+			STR	r8, [r6]
 
 		BL	paddleLoop
 
@@ -120,8 +119,11 @@ paddle:
 			BLE	paddleLoop
 
 			// repaint
-			MOV	r0, r8
-			ADD	r0, r0, #160
+			LDR	r0, =paddleSize
+			LDR	r0, [r0]
+			SUB	r0, r0, #32
+			ADD	r0, r8
+
 			MOV	r1, #772
 			MOV	r2, #0x0
 			MOV	r3, #32
@@ -136,11 +138,89 @@ paddle:
 			BL	makeTile
 
 			SUB	r8,r8, #32
-
-				LDR	r0, =log
-				MOV	r1, r8
-				BL	printf
+			LDR	r6, =paddlePosition
+			STR	r8, [r6]
 
 			BL	paddleLoop
 
 	POP	{r4-r9, pc}
+
+.global bigPaddle
+bigPaddle:
+	PUSH	{lr}
+	BL	drawInitialPaddle
+
+	LDR	r0, =paddleSize
+	MOV	r1, #384
+	STR	r1, [r0]
+
+	LDR	r0, =paddleStart
+	MOV	r1, #0
+	STR	r1, [r0]
+
+	LDR	r0, =paddleBound
+	MOV	r1, #292
+	STR	r1, [r0]
+
+	POP	{pc}
+
+smallPaddle:
+	PUSH	{lr}
+
+	BL	clearPaddle
+	BL	drawInitialPaddle
+
+	LDR	r0, =paddleSize
+	MOV	r1, #192
+	STR	r1, [r0]
+
+	LDR	r0, =paddleStart
+	MOV	r1, #228
+	STR	r1, [r0]
+
+	LDR	r0, =paddleBound
+	MOV	r1, #484
+	STR	r1, [r0]
+
+	LDR	r0, =paddlePosition
+	MOV	r1, #228
+	STR	r1, [r0]
+
+	POP	{pc}
+
+drawInitialPaddle:
+	PUSH	{lr}
+
+	// init Paddle
+	MOV	r0, #228	// x
+	MOV	r1, #772	// y
+	MOV	r2, #0x880000	// color
+	MOV	r3, #192
+	MOV	r4, #32		// height
+	BL	makeTile
+
+	POP	{pc}
+
+clearPaddle:
+	PUSH	{lr}
+	MOV	r0, #36
+	MOV	r1, #772
+	MOV	r2, #0x0
+	MOV	r3, #640
+	MOV	r4, #32
+	BL	makeTile
+	POP	{pc}
+
+.section	.data
+
+
+	.global paddleSize
+	paddleSize:	.int	192
+
+	.global paddleStart
+	paddleStart:	.int	228
+
+	.global	paddlePosition
+	paddlePosition:	.int	228
+
+	paddleBound:	.int	484

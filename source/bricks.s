@@ -114,11 +114,10 @@ hitBrick:
 
 		CMP	r0, #4
 		BLEQ	slowDownBall
-		BLNE	biggerPaddle
+		BLNE	bigPaddle
 		POP	{pc}
 
 	slowDownBall:	MOV	pc, lr
-	biggerPaddle:	MOV	pc, lr
 	makeDrop:	MOV	pc, lr	// make
 
 
