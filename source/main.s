@@ -22,7 +22,7 @@ main:
 	BL	initSNES
 	BL	Init_Frame
 
-	MOV r4, #0 //initial state is 0
+	MOV	r4, #0 //initial state is 0
 	B	startMenuLoop
 
 	startMenuLoop:
@@ -37,12 +37,12 @@ main:
 
 		BL	drawTile
 
-		MOV	r0, #2000
+		MOV	r0, #3750
 		BL	readSNES //check button press
 
-			CMP	r0, #512		// L
+			CMP	r0, #2048		// U
 			MOVEQ 	r4, #0
-			CMP	r0, #256		// R
+			CMP	r0, #1024		// D
 			MOVEQ	r4, #1
 			CMP	r0, #128  		//A
 
@@ -72,10 +72,49 @@ $:	PUSH	{r0-r3, lr}
 	BL	printf
 	POP	{r0-r3, pc}
 
-.global initMenu
-initMenu:
-	B terminate
+.global pauseMenu
+pauseMenu:
+		PUSH	{r4, lr}
+		MOV	r4, #0
 
+		MOV	r0, #10000
+		BL	delayMicroseconds
+	pauseMenuLoop:
+		BL	$
+
+	    	CMP 	r4, #0 //check state
+
+    		MOV 	r1, #200
+    		MOV 	r2, #200
+    		LDREQ	r0, =pauserestart
+    		LDRNE	r0, =pausequit
+
+		BL	drawTile
+
+		MOV	r0, #5500
+		BL	readSNES //check button press
+
+			CMP	r0, #2048		// U
+			MOVEQ 	r4, #0
+			CMP	r0, #1024		// D
+			MOVEQ	r4, #1
+			CMP	r0, #4096		// Start
+			BLEQ	clearScreen
+			POPEQ	{r4, pc}
+			CMP	r0, #128  		//A
+
+		BNE pauseMenuLoop
+
+		//branch based on state
+		CMP	r4, #0
+		POP	{r4, r0}
+		BNE	terminate
+		BEQ	makeGame
+
+clearScreen:
+	PUSH	{lr}
+
+	POP	{pc}
 
 .section .data
 
@@ -101,15 +140,19 @@ initMenu:
 
 	.global cWhite
 	cWhite:	c1:
-		.word	0xFFFFFFFF
+		.int	0xFFFFFF
 
 	.global cIndigo
 	cIndigo: c2:
-		.word 	0x4B0082FF
+		.int 	0x4B0082
 
 	.global cGreen
 	cGreen: c3:
-		.word	0x00FF00
+		.int	0x00FF00
+
+	.global cYellow
+	cYellow:
+		.int	0xFFFF00
 
 .global gpioBaseAddress
 gpioBaseAddress:

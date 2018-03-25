@@ -10,6 +10,43 @@
 
 		POP	{pc}
 
+
+// r0 - xStart
+// r1 - yStart
+// r2 - color
+// r3 - length
+// r4 - xLength (height)
+
+.global makeTile
+makeTile:
+	length	.req 	r3
+	pxDrawn	.req	r6
+	offset	.req	r4
+	frame	.req	r5
+	width	.req	r6
+	xval	.req	r7
+	yval	.req	r8
+	color	.req	r9
+
+	PUSH	{r5-r6, lr}
+	// length r3
+	height	.req	r4
+
+	LDR	r5, =frameBufferInfo
+	LDR	r5, [r5, #4]
+
+	MOV	pxDrawn, #0
+	tileLoop:
+		BL	drawHLn
+		ADD	r0, r0, r5
+		SUB	r0, r0, length
+		SUB	r0, r0, #1
+		ADD	pxDrawn, pxDrawn, #1
+		CMP	pxDrawn, height
+		BLE	tileLoop
+
+	POP	{r5-r6, pc}
+
 .global drawPx
 
 // r0 - xStart
@@ -18,13 +55,6 @@
 
 drawPx:
 	PUSH	{r3-r9, lr}
-
-	offset	.req	r4
-	frame	.req	r5
-	width	.req	r6
-	xval	.req	r7
-	yval	.req	r8
-	color	.req	r9
 
 	MOV	xval, r0
 	MOV	yval, r1
@@ -55,8 +85,6 @@ drawPx:
 .global drawHLn
 drawHLn:
 	PUSH	{r6, lr}
-	length	.req 	r3
-	pxDrawn	.req	r6
 
 	MOV	pxDrawn, #0
 	hlPxLoop:
@@ -69,32 +97,6 @@ drawHLn:
 	POP	{r6, lr}
 	MOV	pc, lr
 
-// r0 - xStart
-// r1 - yStart
-// r2 - color
-// r3 - length
-// r4 - xLength (height)
-
-.global makeTile
-makeTile:
-	PUSH	{r5-r6, lr}
-	// length r3
-	height	.req	r4
-
-	LDR	r5, =frameBufferInfo
-	LDR	r5, [r5, #4]
-
-	MOV	pxDrawn, #0
-	tileLoop:
-		BL	drawHLn
-		ADD	r0, r0, r5
-		SUB	r0, r0, length
-		SUB	r0, r0, #1
-		ADD	pxDrawn, pxDrawn, #1
-		CMP	pxDrawn, height
-		BLE	tileLoop
-
-	POP	{r5-r6, pc}
 
 	.unreq	length
 	.unreq	height
@@ -184,96 +186,11 @@ drawWord:
 		B	drawWordLoop
 
 
-// r0 - brick x position
-// r1 - brick y position
-// r2 - brick type (0, 1, 2)
-
-.global drawBrick
-drawBrick:
-	xpos		.req	r5
-	ypos		.req	r6
-	colorCode	.req	r7
-
-
-	PUSH	{r3-r7, lr}
-	BL	drawOutBrick
-	BL	drawInBrick
-		.unreq	xpos
-		.unreq	ypos
-		.unreq	colorCode
-
-	POP	{r3-r7, pc}
-
-
-drawOutBrick:
-	xpos		.req	r5
-	ypos		.req	r6
-	colorCode	.req	r7
-
-	PUSH	{lr}
-	MOV	xpos, r0
-	MOV	ypos, r1
-	MOV	colorCode, r2
-
-	MOV	r3, #64
-	MOV	r4, #32
-
-	LSL	xpos, xpos, #6
-	ADD	xpos, #36
-	MOV	r0, xpos
-
-	LSL	ypos, ypos, #5
-	ADD	ypos, #64
-	MOV	r1, ypos
-
-	MOV	r2, #0x0
-	BL 	makeTile
-		.unreq	xpos
-		.unreq	ypos
-		.unreq	colorCode
-
-	POP	{pc}
-
-drawInBrick:
-	xpos		.req	r5
-	ypos		.req	r6
-	colorCode	.req	r7
-
-
-	PUSH	{lr}
-
-	ADD	xpos, xpos, #4
-	ADD	ypos, ypos, #4
-
-	MOV	r3, #56
-	MOV	r4, #24
-
-	MOV	r0, xpos
-	MOV	r1, ypos
-
-	MOV	colorCode, #0
-	CMP	colorCode, #1
-	LDREQ	r2, =cYellow
-	LDRGT	r2, =cGreen
-	LDRLT	r2, =cWhite
-
-	BL	makeTile
-
-		.unreq	xpos
-		.unreq	ypos
-		.unreq	colorCode
-
-	POP	{pc}
-
 // Data section
 .section .data
 
 .align 4
 font:		.incbin	"font.bin"
-
-cWhite:		.word 0xFFFFFF
-cYellow:	.word 0xFFFF00
-cGreen:		.word 0x00FF00
 
 .global frameBufferInfo
 frameBufferInfo:

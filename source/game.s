@@ -2,13 +2,13 @@
 
 .global makeGame
 makeGame:
-	//walls
 	MOV	r0, #4
 	MOV	r1, #4
 	MOV	r2, #0x007770
 	MOV	r3, #704
 	MOV	r4, #944
 	BL	makeTile
+
 
 	// foreground
 	MOV	r0, #36
@@ -19,33 +19,34 @@ makeGame:
 	BL	makeTile
 
 	BL	initScore
-	BL	initBrick
+	BL	initLives
+	BL	initBricks
 
 	BL	paddle
 	B	terminate
 
-initBrick:
-	PUSH	{r4-r9, lr}
+initBricks:
+	PUSH	{r4-r6, lr}
 	MOV	r4, #0		// x position
-	MOV	r5, #0		// y position
-	MOV	r6, #0
+	MOV	r5, #2		// y position
+	MOV	r6, #2		// color
 
 	brickLoop:
 		MOV	r0, r4
 		MOV	r1, r5
 		MOV	r2, r6
-		BL	drawBrick
+		BL	makeBrick
 		ADD	r4, r4, #1
 		CMP	r4, #9
 		BLE	brickLoop
 
 	MOV	r4, #0
 	ADD	r5, r5, #1
-	MOV	r6, #1
-	CMP	r5, #5
+	SUB	r6, #1
+	CMP	r5, #4
 	BLE	brickLoop
 
-	POP	{r4-r9, pc}
+	POP	{r4-r6, pc}
 
 paddle:
 	PUSH	{r4-r9, lr}
@@ -71,7 +72,7 @@ paddle:
 		MOV	r7, #1750
 
 		CMP	r0, #4096		// start
-		BEQ	initMenu
+		BLEQ	pauseMenu
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft

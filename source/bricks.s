@@ -1,42 +1,152 @@
 .section .text
 
-.global getBrickState
-getBrickState:
-	PUSH	{r4-r9, lr}
+// r0 r1, code
+.global makeBrick
+makeBrick:
+	PUSH	{r4-r6, lr}
 	MOV	r4, r0
 	MOV	r5, r1
+	MOV	r6, r2
 
+	BL	codeToTile
+	STRB	r2, [r0]	// store the brick state
+
+	MOV	r0, r4
+	MOV	r1, r5
+	MOV	r2, r6
+	BL	drawBrick
+
+	POP	{r4-r6, pc}
+
+// r0 - brick x position
+// r1 - brick y position
+// r2 - brick type (0, 1, 2)
+drawBrick:
+	xpos		.req	r5
+	ypos		.req	r6
+	colorCode	.req	r7
+
+
+	PUSH	{r3-r7, lr}
+	BL	codeToXY
+
+	MOV	xpos, r0
+	MOV	ypos, r1
+	MOV	colorCode, r2
+
+	MOV	r3, #64
+	MOV	r4, #32
+
+	MOV	r2, #0x0
+	BL 	makeTile		// make the outside brick
+
+	ADD	xpos, xpos, #4
+	ADD	ypos, ypos, #4
+
+	MOV	r3, #56
+	MOV	r4, #24
+
+	MOV	r0, xpos
+	MOV	r1, ypos
+
+	CMP	colorCode, #1
+	MOVLT	r2, #0x00FF00	// 1 hit
+	MOVEQ	r2, #0x007700	// 2 hits
+	MOVGT	r2, #0x003300	// 3 hits
+
+	BL 	makeTile
+
+	POP	{r3-r7, pc}
+
+
+.global getBrickState
+// takes XY
+getBrickState:
+	PUSH	{r4-r9, lr}
 	//convert to brick state
-		SUB	r4, r0, #36
-		ASR	r0, r4, #7	// getting rid of the remainder ensures
-		LSL	r0, r4, #1	// that y points to the edge, not half way
-
-		SUB	r5, r5, #32
-		ASR	r1, r4, #5
-
-		BL	codeToTile
-
+	BL	XYtoCode
+	BL	codeToTile
 	// return brick state
-	MOV	r0, r8
+	LDRB	r0, [r0]
 	POP	{r4-r9, pc}
 
+// params
+// r0 - xPos
+// r1 - yPos
+
+// returns 0 - didn't hit brick
+// 	   1 - hit brick
 .global	hitBrick
 hitBrick:
 	PUSH	{r4-r9, lr}
-	BL	getBrickState
-	//change brick state
-
 
 	//recolor brick
+	MOV	r4, r0
+	MOV	r5, r1
+
+	BL	XYtoCode
+	BL	codeToTile
+	CMP	r0, #0
+
+	CMPEQ	r0, #0		// didn't hit brick
+	POP	{r4-r9, pc}
+
+	CMP	r0, #3
+	SUBLE	r2, r0, #1	// normal brick, degrade the brick
+
+	BLGT	specialTile	// not a normal brick, do something
+	MOVGT	r2, #0
+
+	MOV	r0, r4
+	MOV	r1, r5
+	BL	makeTile
+
 
 	// return brick state
 	MOV	r0, r8
+
+	MOV	r0, #1		// hit brick
 	POP	{r4-r9, pc}
+
+
+	specialTile:
+		PUSH	{lr}
+
+		CMP	r0, #4
+		BLEQ	slowDownBall
+		BLNE	biggerPaddle
+		POP	{pc}
+
+	slowDownBall:	MOV	pc, lr
+	biggerPaddle:	MOV	pc, lr
+	makeDrop:	MOV	pc, lr	// make
+
+
+// r0 r1 - xy code
+// returns r0 r1 - xy
+codeToXY:
+	LSL	r0, r0, #6
+	ADD	r0, r0, #36
+	LSL	r1, r1, #5
+	ADD	r1, r1, #64
+	MOV	pc, lr
+
+// r0 r1 - xy position
+// returns r0 r1 - xy code
+XYtoCode:
+	SUB	r0, #36
+	SUB	r1, #64
+
+	ASR	r0, #7
+	LSL	r0, #1
+
+	ASR	r1, #5
+	MOV	pc, lr
 
 
 // params
 //r0 - xcode
-//r1 - r code
+//r1 - ycode
 
 // return
 // r0 - brickStateAddress
@@ -174,9 +284,9 @@ codeToTile:
 
 
 // 0 - broken
-// 1 - 1 hit to break
+// 1 - 1 hits to break
 // 2 - 2 hits to break
-// 3 - 3 hits to break
+// 3 - 3 hit to break
 // 4 - special brick 1
 // 5 - special brick 2
 .section	.data
@@ -197,21 +307,21 @@ codeToTile:
 	tile13:	.byte	1
 	tile23:	.byte	3
 
-	tile4:	.byte	2	// turns to special
+	tile4:	.byte	2
 	tile14:	.byte	1
-	tile24:	.byte	3	// turns to special
+	tile24:	.byte	3
 
 	tile5:	.byte	2
 	tile15:	.byte	1
 	tile25:	.byte	3
 
-	tile6:	.byte	2	// turns to special
+	tile6:	.byte	2
 	tile16:	.byte	1
-	tile26:	.byte	3	// turns to special
+	tile26:	.byte	3
 
 	tile7:	.byte	2
 	tile17:	.byte	1
-	tile27:	.int	3
+	tile27:	.byte	3
 
 	tile8:	.byte	2
 	tile18:	.byte	4	// special
