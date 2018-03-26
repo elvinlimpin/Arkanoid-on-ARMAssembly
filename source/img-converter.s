@@ -1,7 +1,63 @@
 //r0= address of image data
 //r1=image width
 //r2=image length
+
 .section	.text
+.global drawCenterTile
+drawCenterTile:
+
+	push	{r4-r9, lr}
+	
+	address	.req	r5
+	width	.req	r6
+	length	.req	r7
+	x	.req	r8
+	y	.req	r9
+	
+	//store values
+    mov	address, r0
+	mov	width,	r1
+	mov	length,	r2
+	
+	//initalize x and y start positions
+	Mov x, #360
+	sub x, x, width, lsr #1
+	
+	mov y, #480
+	sub y, y, length, lsr #1
+
+    add r4, width, x
+	
+centertileloop:
+
+    //draw a pixel
+    mov r0, x
+    mov r1, y
+    ldr r2, [address], #4
+    bl  drawPx
+    
+    add x, x, #1
+    
+    cmp x, r4
+    subeq x, x, width
+    ADDEQ y, y, #1
+    
+    mov r0, #480
+    add r0, r0, length, lsr #1
+    cmp y, r0
+    BLT centertileloop
+
+  	.unreq	address
+	.unreq	width
+	.unreq	length
+	.unreq	x
+	.unreq	y
+    
+    pop		{r4-r9, pc}
+    
+    //r0= address of image data
+//r1=image width
+//r2=image length
 .global drawTile
 drawTile:
 
