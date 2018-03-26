@@ -89,7 +89,7 @@ pauseMenu:
     		LDREQ	r0, =pauserestart
     		LDRNE	r0, =pausequit
 
-		BL	drawTile
+		BL	drawCenterTile
 
 		MOV	r0, #5500
 		BL	readSNES //check button press
