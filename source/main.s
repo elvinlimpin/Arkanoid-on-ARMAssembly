@@ -110,12 +110,28 @@ pauseMenu:
 		POP	{r4, r0}
 		BNE	terminate
 		BEQ	makeGame
-
 clearScreen:
-	PUSH	{lr}
+	PUSH	{r4,r5, lr}
+	
+	MOV r4, #260 //start x position of where menu is drawn
+	MOV r5, #380 //start y position of where meun is drawn
+	
+clearScreenLoop:
+    MOV r0, r4
+    MOV r1, r5
+    MOV r2, #0
+    BL drawPx
+    
+    ADD r4, r4, #1
+    CMP r4, #460
+    MOVEQ	r4, #260
+    ADDEQ   r5, r5, #1
+    
+    CMP		r5, #580
+    BLT		clearScreenLoop
+    
 
-	POP	{pc}
-
+	POP	{r4, r5, pc}
 .section .data
 
 .align 2
