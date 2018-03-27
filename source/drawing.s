@@ -186,6 +186,30 @@ drawWord:
 		ADD	r6, r6, #11
 		B	drawWordLoop
 
+.global blackScreen //blacks out game screen takes and returns no arguments
+blackScreen:
+	PUSH {r4, r5, lr}
+	MOV r4, #0
+	MOV r5, #0
+drawblackscreen:
+    MOV r0, r4
+    MOV r1, r5
+    MOV r2, #0
+    bl	drawPx
+    
+    add	r4, r4, #1
+    CMP r4, #720
+    MOVEQ	r4, #0
+    
+    ADDEQ r5, r5, #1
+    
+    CMP   r5, #960
+    BLT drawblackscreen
+    
+    pop {r4,r5, pc}
+	
+
+
 
 // Data section
 .section .data

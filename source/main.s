@@ -50,7 +50,7 @@ main:
 
 		//branch based on state
 		CMP	r4, #0
-		BNE	main
+		BNE	terminate
 		BEQ	makeGame
 	   //insert code to clear screen here
 
@@ -59,6 +59,7 @@ terminate:				// infinite loop ending program
 	LDR	r0, =msgTerminate
 	BL	printf
 
+    BL blackScreen
 	haltLoop$:
 		B	haltLoop$
 
@@ -77,21 +78,22 @@ pauseMenu:
 		PUSH	{r4, lr}
 		MOV	r4, #0
 
-	MOV	r0, #1000
-	BL	delayMicroseconds
+		MOV	r0, #10000
+		BL	delayMicroseconds
 	pauseMenuLoop:
 		BL	$
 
-	    	CMP 	r4, #0 //check state
+	   	CMP 	r4, #0 //check state
 
     		MOV 	r1, #200
     		MOV 	r2, #200
+ 
     		LDREQ	r0, =pauserestart
     		LDRNE	r0, =pausequit
 
-		BL	drawCenterTile
+		Import: BL	drawCenterTile
 
-		MOV	r0, #6000
+		MOV	r0, #5500
 		BL	readSNES //check button press
 
 			CMP	r0, #2048		// U
@@ -99,7 +101,7 @@ pauseMenu:
 			CMP	r0, #1024		// D
 			MOVEQ	r4, #1
 			CMP	r0, #4096		// Start
-			BLEQ	maybeClearScreen
+			BLEQ	clearScreen
 			POPEQ	{r4, pc}
 			CMP	r0, #128  		//A
 
@@ -109,39 +111,31 @@ pauseMenu:
 		CMP	r4, #0
 		POP	{r4, r0}
 		BNE	terminate
-//		BLEQ	smallPaddle
 		BEQ	makeGame
-
-
-maybeClearScreen:
-	PUSH	{lr}
-	MOV	r0, #60000
-	BL	delayMicroseconds
-	BL	clearScreen
-	POP	{pc}
 
 clearScreen:
 	PUSH	{r4,r5, lr}
-
+	
 	MOV r4, #260 //start x position of where menu is drawn
 	MOV r5, #380 //start y position of where meun is drawn
-
-	clearScreenLoop:
-		MOV r0, r4
-    		MOV r1, r5
-    		MOV r2, #0
-    		BL drawPx
-
-    		ADD r4, r4, #1
-    		CMP r4, #460
-    		MOVEQ	r4, #260
-    		ADDEQ   r5, r5, #1
-
-    		CMP		r5, #580
-    		BLT		clearScreenLoop
+	
+clearScreenLoop:
+    MOV r0, r4
+    MOV r1, r5
+    MOV r2, #0
+    BL drawPx
+    
+    ADD r4, r4, #1
+    CMP r4, #460
+    MOVEQ	r4, #260
+    ADDEQ   r5, r5, #1
+    
+    CMP		r5, #580
+    BLT		clearScreenLoop
     
 
 	POP	{r4, r5, pc}
+
 .section .data
 
 .align 2
