@@ -77,6 +77,9 @@ paddle:
 		CMP	r0, #4096		// start
 		BLEQ	pauseMenu
 
+		CMP	r0, #32768		// hit brick test
+		BLEQ	testBall
+
 		CMP	r0, #512		// L
 		BEQ	moveLeft
 		CMP	r0, #256		// R
