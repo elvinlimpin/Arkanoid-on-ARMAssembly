@@ -22,6 +22,10 @@ makeGame:
 	BL	initLives
 	BL	initBricks
 
+	LDR	r0, =paddlePosition
+	MOV	r1, #228
+	STR	r1, [r0]
+
 	BL	paddle
 	B	terminate
 
@@ -51,6 +55,7 @@ initBricks:
 paddle:
 	PUSH	{r4-r9, lr}
 
+	BL	$
 	BL	drawInitialPaddle
 	LDR	r8, =paddleStart // default xstart
 	LDR	r8, [r8]
@@ -70,7 +75,7 @@ paddle:
 		MOV	r7, #1750
 
 		CMP	r0, #4096		// start
-		BLEQ	hitBrickTest
+		BLEQ	pauseMenu
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
@@ -165,6 +170,7 @@ bigPaddle:
 
 	POP	{pc}
 
+.global smallPaddle
 smallPaddle:
 	PUSH	{lr}
 
