@@ -104,4 +104,4 @@ intToString:
 	scoreCount:	.int	12
 
 	.global	lifeCount
-	lifeCount:	.int	34
+	lifeCount:	.int	0

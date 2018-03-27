@@ -1,15 +1,21 @@
 .section .text
 
-// r0 r1, code
+// r0 - x code
+// r1 - y code
+// r2 - colorCode
+// draws Brick and changes brick state
 .global makeBrick
 makeBrick:
 	PUSH	{r4-r6, lr}
 	MOV	r4, r0
 	MOV	r5, r1
 	MOV	r6, r2
-
 	BL	codeToTile
 	STRB	r2, [r0]	// store the brick state
+
+	MOV	r1, r6
+	LDR	r0, =log
+	BL	printf
 
 	MOV	r0, r4
 	MOV	r1, r5
@@ -27,8 +33,8 @@ drawBrick:
 	colorCode	.req	r7
 
 
-	PUSH	{r3-r7, lr}
-	BL	codeToXY
+	PUSH	{r3-r8, lr}
+	BL	CodeToXY
 
 	MOV	xpos, r0
 	MOV	ypos, r1
@@ -38,7 +44,13 @@ drawBrick:
 	MOV	r4, #32
 
 	MOV	r2, #0x0
-	BL 	makeTile		// make the outside brick
+
+
+	LDR	r8, =doTile
+	LDRB	r8, [r8]
+	CMP	r8, #1
+	BLNE	$
+	BLEQ 	makeTile		// make the outside brick
 
 	ADD	xpos, xpos, #4
 	ADD	ypos, ypos, #4
@@ -46,67 +58,70 @@ drawBrick:
 	MOV	r3, #56
 	MOV	r4, #24
 
-	MOV	r0, xpos
-	MOV	r1, ypos
-
 	CMP	colorCode, #1
 	MOVLT	r2, #0x00FF00	// 1 hit
 	MOVEQ	r2, #0x007700	// 2 hits
 	MOVGT	r2, #0x003300	// 3 hits
 
-	BL 	makeTile
+	MOV	r0, xpos
+	MOV	r1, ypos
 
-	POP	{r3-r7, pc}
+
+	LDR	r7, =doTile
+	LDRB	r7, [r7]
+	CMP	r7, #1
+	BLNE	$
+	BLEQ 	makeTile
+
+
+	POP	{r3-r8, pc}
 
 
 .global getBrickState
 // takes XY
+// return brick state
 getBrickState:
-	PUSH	{r4-r9, lr}
 	//convert to brick state
 	BL	XYtoCode
 	BL	codeToTile
 	// return brick state
 	LDRB	r0, [r0]
-	POP	{r4-r9, pc}
+	MOV	pc, lr
+
 
 // params
-// r0 - xPos
-// r1 - yPos
+// r0 - x coordinate
+// r1 - y coordinate
 
 // returns 0 - didn't hit brick
 // 	   1 - hit brick
 .global	hitBrick
 hitBrick:
-	PUSH	{r4-r9, lr}
-
-	//recolor brick
+	PUSH	{r4-r7, lr}
 	MOV	r4, r0
 	MOV	r5, r1
 
-	BL	XYtoCode
-	BL	codeToTile
-	CMP	r0, #0
+	BL	getBrickState
+	MOV	r6, r0		// store brick state on register
 
-	CMPEQ	r0, #0		// didn't hit brick
-	POP	{r4-r9, pc}
+	CMP	r6, #0
 
-	CMP	r0, #3
-	SUBLE	r2, r0, #1	// normal brick, degrade the brick
+	MOVEQ	r0, #0		// didn't hit brick
+	POPEQ	{r4-r7, pc}
 
-	BLGT	specialTile	// not a normal brick, do something
-	MOVGT	r2, #0
+	CMP	r6, #3		// check if normal brick
+	SUBLE	r2, r6, #1	// normal brick, degrade the brick
+
+//	BLGT	specialTile	// not a normal brick, do something
+	MOVGT	r2, #0		// brick is now gone
 
 	MOV	r0, r4
 	MOV	r1, r5
-	BL	makeTile
-
-
-	// return brick state
-	MOV	r0, r8
+	MOV	r6, r2		// save new value
+	BL	makeBrick	// recolor
 
 	MOV	r0, #1		// hit brick
-	POP	{r4-r9, pc}
+	POP	{r4-r7, pc}
 
 
 	specialTile:
@@ -123,7 +138,7 @@ hitBrick:
 
 // r0 r1 - xy code
 // returns r0 r1 - xy
-codeToXY:
+CodeToXY:
 	LSL	r0, r0, #6
 	ADD	r0, r0, #36
 	LSL	r1, r1, #5
@@ -143,6 +158,25 @@ XYtoCode:
 	MOV	pc, lr
 
 
+.global hitBrickTest
+hitBrickTest:
+	PUSH	{r4, lr}
+
+	LDR	r4, =doTile
+	MOV	r3, #0
+	STRB	r3, [r4]
+
+	MOV	r0, #2
+	MOV	r1, #2
+	BL	CodeToXY
+	BL	hitBrick
+
+	MOV	r4, r0
+	LDR	r0, =lifeCount
+	STR	r4, [r0]
+
+	POP	{r4, pc}
+
 // params
 //r0 - xcode
 //r1 - ycode
@@ -155,6 +189,7 @@ codeToTile:
 	CMP	r1, #1
 	BLT	fromZero
 	BEQ	fromTen
+
 	// BG	from Twenty
 		CMP	r0, #0
 		LDREQ	r0, =tile20
@@ -330,3 +365,4 @@ codeToTile:
 	tile19:	.byte	1
 	tile29:	.byte	3
 
+	doTile:	.byte	1

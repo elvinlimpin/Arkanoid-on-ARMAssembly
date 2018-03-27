@@ -107,10 +107,10 @@ drawHLn:
 // Draw the character in r0
 // r1=x
 // r2=y
-// @r3=colour
+// r3=colour
 .global drawChar
 drawChar:
-	PUSH		{r4-r10, lr}
+	PUSH		{r4-r9, lr}
 
 	chAdr		.req	r4
 	px		.req	r5
@@ -118,17 +118,18 @@ drawChar:
 	row		.req	r7
 	mask		.req	r8
         colour		.req	r9
-        initx		.req    r10
 
 	LDR		chAdr, =font		// load the address of the font map
 	ADD		chAdr,	r0, lsl #4	// char address = font base + (char * 16)
 
 	MOV		py, r2			// init the Y coordinate (pixel coordinate)
-        MOV		initx, r1	      	// init X coordinate
 
+	LDR		r2 , =initX
+	STR		r1, [r2]
 
 	charLoop:
-		MOV		px, initx		// init the X coordinate
+		LDR		px, =initX
+		LDR		px, [px]		// init the X coordinate
 		MOV		mask, #0x01		// set the bitmask to 1 in the LSB
 		LDRB		row, [chAdr], #1	// load the row byte, post increment chAdr
 
@@ -159,7 +160,7 @@ drawChar:
 	.unreq	row
 	.unreq	mask
 
-	POP		{r4-r10, pc}
+	POP		{r4-r9, pc}
 
 
 // r0 - char array address
@@ -191,6 +192,8 @@ drawWord:
 
 .align 4
 font:		.incbin	"font.bin"
+
+initX:		.int 0
 
 .global frameBufferInfo
 frameBufferInfo:

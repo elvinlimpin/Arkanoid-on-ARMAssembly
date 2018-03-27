@@ -64,12 +64,13 @@ paddle:
 		LDR	r8, [r8]
 
 		BL	updateScoreAndLives
+//		BL	ballLoop
 		MOV	r0, r7			// delay
 		BL	readSNES
 		MOV	r7, #1750
 
 		CMP	r0, #4096		// start
-		BLEQ	pauseMenu
+		BLEQ	hitBrickTest
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
