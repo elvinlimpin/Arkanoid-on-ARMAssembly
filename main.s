@@ -37,7 +37,7 @@ main:
 
 		BL	drawTile
 
-		MOV	r0, #3750
+		MOV	r0, #5000
 		BL	readSNES //check button press
 
 			CMP	r0, #2048		// U
@@ -110,7 +110,7 @@ pauseMenu:
 		//branch based on state
 		CMP	r4, #0
 		POP	{r4, r0}
-		BNE	terminate
+		BNE	main
 		BEQ	makeGame
 
 clearScreen:
@@ -177,4 +177,3 @@ clearScreenLoop:
 .global gpioBaseAddress
 gpioBaseAddress:
 	.int	0
-
