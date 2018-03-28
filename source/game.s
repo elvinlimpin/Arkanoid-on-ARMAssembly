@@ -165,6 +165,7 @@ paddle:
 
 WIN:
         push    {lr}
+	BL	updateScoreAndLives
 	ldr	r0,=gamewon
         MOV	r1, #200
 	MOV	r2, #200
@@ -178,6 +179,7 @@ anybutton:
 
 LOST:
         push    {lr}
+	BL	updateScoreAndLives
         BL	clearPaddle
 	ldr	r0,=gamelost
         MOV	r1, #200
