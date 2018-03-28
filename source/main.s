@@ -112,7 +112,7 @@ pauseMenu:
 		//branch based on state
 		CMP	r4, #0
 		POP	{r4, r0}
-		BNE	terminate
+		BNE	menusetup
 		BEQ	makeGame
 
 clearScreen:
