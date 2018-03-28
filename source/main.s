@@ -75,6 +75,12 @@ $:	PUSH	{r0-r3, lr}
 	BL	printf
 	POP	{r0-r3, pc}
 
+.global $1
+$1:	PUSH	{r0-r3, lr}
+	LDR	r0, =log$1
+	BL	printf
+	POP	{r0-r3, pc}
+
 .global pauseMenu
 pauseMenu:
 		PUSH	{r4, lr}
@@ -150,6 +156,10 @@ clearScreenLoop:
 
 	log$:
 		.asciz			"logger invoked\n"
+
+	log$1:
+		.asciz			"brick logger invoked\n"
+
 	.global log
 	log:
 		.asciz			"log: %d\n"

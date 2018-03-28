@@ -13,10 +13,6 @@ makeBrick:
 	BL	codeToTile
 	STRB	r2, [r0]	// store the brick state
 
-	MOV	r1, r6
-	LDR	r0, =log
-//	BL	printf
-
 	MOV	r0, r4
 	MOV	r1, r5
 	MOV	r2, r6
@@ -112,7 +108,6 @@ hitBrick:
 	LDR	r0, =log
 	BL	printf
 
-
 	CMP	r6, #0
 
 	MOVEQ	r0, #0		// didn't hit brick
@@ -128,7 +123,7 @@ hitBrick:
 	MOV	r0, r4
 	MOV	r1, r5
 	MOV	r2, r6		// save new value
-	BL	makeBrick	// recolor
+//	BL	makeBrick	// recolor
 
 	MOV	r0, #1		// hit brick
 	POP	{r4-r7, lr}
@@ -179,7 +174,12 @@ hitBrickTest:
 	STRB	r3, [r4]
 
 	MOV	r0, #2		//x {0, 9}
-	MOV	r1, #2		//y {0, 2}
+	MOV	r1, #1		//y {0, 2}
+	BL	getBrickState
+	MOV	r1, r0
+	LDR	r0, =log
+	BL	printf
+
 	BL	CodeToXY
 	BL	hitBrick
 
@@ -361,6 +361,7 @@ checkGameWon:
 	push {r4, r5, lr}
 	mov r4, #0
         ldr r5, =tile0
+
 checkallbricks:
 	ldrb r0, [r5, r4]
 	ADD  r4, r4, #1

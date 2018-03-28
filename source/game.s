@@ -77,8 +77,8 @@ paddle:
                 BEQ	WIN
 
                 LDR	r0, =lifeCount
-                Ldr 	r0, [r0]
-                cmp	r0, #0
+                LDR 	r0, [r0]
+                CMP	r0, #0
                 BEQ	LOST
 
 		BL	updateScoreAndLives

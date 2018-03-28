@@ -2,45 +2,73 @@
 moveBall:
 	PUSH	{lr}
 
-	BL	isLaunched		// if no launch, don't do anything
-	CMP	r0, #0
+	LDR	r0, =slopeCode
+	LDR	r0, [r0]
+
+	CMP	r0, #0		// ignore if not launched
 	POPEQ	{pc}
 
-	LDR	r0, =slopeCode
-	CMP	r0, #1
+	CMP	r0, #9
 	POPLT	{pc}
-	BEQ	moveRight
+	BEQ	move9
+
+	CMPNE	r0, #7
+	BLLT	move7
+	POPLT	{pc}
+
+	CMPNE	r0, #89
+	BLEQ	move89
+	POPEQ	{pc}
+
+	CMPNE	r0, #87
+	BLEQ	move87
+	POPEQ	{pc}
 
 	CMPNE	r0, #3
-	BLLT	moveLeft
-	POPLT	{pc}
-
-	BLEQ	moveUpRight
+	BLEQ	move3
 	POPEQ	{pc}
 
-	BL	moveUpLeft
+	CMPNE	r0, #1
+	BLEQ	move1
+	POPEQ	{pc}
+
+	CMPNE	r0, #23
+	BLEQ	move23
+	POPEQ	{pc}
+
+	CMPNE	r0, #21
+	BLEQ	move21
+	POPEQ	{pc}
+
+	LDR	r0, =illegalSlope
+	BL	printf
 	POP	{pc}
 
-moveRight:
+move89:
 	PUSH	{lr}
+	BL	$1
 
 	LDR	r0, =curX
 	LDR	r1, [r0]
-	ADD	r1, r1, #32
+	SUB	r1, r1, #32
 	STR	r1, [r0]
 
 	LDR	r0, =curY
 	LDR	r1, [r0]
-	ADD	r1, r1, #32
+	SUB	r1, r1, #32
 	STR	r1, [r0]
 
 	BL	drawBall
 	BL	getRidOfBall
 	POP	{pc}
 
-moveLeft:	MOV	pc, lr
-moveUpRight:	MOV	pc, lr
-moveUpLeft:	MOV	pc, lr
+move9:	MOV	pc, lr
+move7:	MOV	pc, lr
+move87:	MOV	pc, lr
+move3:	MOV	pc, lr
+move1:	MOV	pc, lr
+move23:	MOV	pc, lr
+move21:	MOV	pc, lr
 
 .global drawBall
 drawBall:
@@ -76,8 +104,8 @@ initBall:
 	ADD	r4, r0, #64
 
 	BL	isLaunched
-	CMP	r0, #1
-	POPEQ	{r4-r6, pc}
+	CMP	r0, #0
+	POPNE	{r4-r6, pc}
 
 
 	LDR	r5, =curX
@@ -134,8 +162,8 @@ launchBall:
 launch:
 	PUSH	{lr}
 
-	LDR	r0, =launched
-	MOV	r1, #1
+	LDR	r0, =slopeCode
+	MOV	r1, #89	// 60 up right
 	STRB	r1, [r0]
 
 	POP	{pc}
@@ -144,21 +172,26 @@ launch:
 unlaunch:
 	PUSH	{lr}
 
-	LDR	r0, =launched
+	LDR	r0, =slopeCode
 	MOV	r1, #0
 	STRB	r1, [r0]
-
+	BL	initBall
 	POP	{pc}
 
 
 .global	isLaunched
 isLaunched:
 	PUSH	{lr}
-	LDR	r0, =launched
-	LDRB	r0, [r0]
+	LDR	r0, =slopeCode
+	LDR	r0, [r0]
+	CMP	r0, #0
+	MOVNE	r0, #0
+	MOVEQ	r0, #1
 	POP	{pc}
 
 .section	.data
+
+	illegalSlope:	.asciz	"Illegal Slope \n"
 
 	prevX:	.int	370
 	curX:	.int	326
@@ -167,12 +200,15 @@ isLaunched:
 	curY:	.int	738
 
 
-	launched: .byte	0
+	//  0: unlaunched
+	//  9: 45 up right
+	//  7: 45 up left
+	// 89: 60 up right
+	// 87: 60 up left
+	//  3: 45 down right
+	//  1: 45 down left
+	// 23: 60 down right
+	// 21: 60 down left
+	// hint: these numbers mimic the numpad
 
-
-	// 0:  0 (void)
-	// 1:  2/2
-	// 2: -2/2
-	// 3:  3/2
-	// 4: -3/2
-	slopeCode:	.int	1
+	slopeCode:	.int	0
