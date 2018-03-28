@@ -68,7 +68,7 @@ paddle:
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
-		BL	checkGameWon //check if game has been won not working
+		BL	checkGameWon //check if game has been won
                 CMP	r0, #1
                 BEQ	WIN
 
