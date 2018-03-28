@@ -1,4 +1,4 @@
-.text
+.section .text
 
 .global makeGame
 makeGame:
@@ -55,10 +55,12 @@ initBricks:
 paddle:
 	PUSH	{r4-r9, lr}
 
-	BL	$
 	BL	drawInitialPaddle
 	LDR	r8, =paddleStart // default xstart
 	LDR	r8, [r8]
+	MOV	r0, r8
+	BL	initBall
+
 	MOV	r7, #1750	// pause length
 
 	paddleLoop:
@@ -78,7 +80,6 @@ paddle:
                 BEQ	LOST
 
 		BL	updateScoreAndLives
-//		BL	ballLoop
 		MOV	r0, r7			// delay
 		BL	readSNES
 		MOV	r7, #1750
@@ -86,8 +87,8 @@ paddle:
 		CMP	r0, #4096		// start
 		BLEQ	pauseMenu
 
-		CMP	r0, #32768		// hit brick test
-		BLEQ	testBall
+		CMP	r0, #32768		// B
+		BLEQ	hitBrickTest
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
@@ -129,6 +130,8 @@ paddle:
 			ADD	r8, r8, #32
 			LDR	r6, =paddlePosition
 			STR	r8, [r6]
+			MOV	r0, r8
+			BL	initBall
 
 		BL	paddleLoop
 
@@ -158,6 +161,8 @@ paddle:
 			SUB	r8,r8, #32
 			LDR	r6, =paddlePosition
 			STR	r8, [r6]
+			MOV	r0, r8
+			BL	initBall
 
 			BL	paddleLoop
 

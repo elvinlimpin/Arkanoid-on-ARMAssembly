@@ -15,7 +15,7 @@ makeBrick:
 
 	MOV	r1, r6
 	LDR	r0, =log
-	BL	printf
+//	BL	printf
 
 	MOV	r0, r4
 	MOV	r1, r5
@@ -104,6 +104,11 @@ hitBrick:
 	BL	getBrickState
 	MOV	r6, r0		// store brick state on register
 
+	MOV	r1, r0
+	LDR	r0, =log
+	BL	printf
+
+
 	CMP	r6, #0
 
 	MOVEQ	r0, #0		// didn't hit brick
@@ -166,8 +171,8 @@ hitBrickTest:
 	MOV	r3, #0
 	STRB	r3, [r4]
 
-	MOV	r0, #2
-	MOV	r1, #2
+	MOV	r0, #2		//x {0, 9}
+	MOV	r1, #2		//y {0, 2}
 	BL	CodeToXY
 	BL	hitBrick
 
