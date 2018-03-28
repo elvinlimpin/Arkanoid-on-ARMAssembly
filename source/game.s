@@ -64,9 +64,6 @@ paddle:
 	MOV	r7, #1750	// pause length
 
 	paddleLoop:
-			LDR	r0, =scoreCount
-			STR	r8, [r0]
-
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
@@ -114,7 +111,7 @@ paddle:
 
 			//repaint
 			MOV	r0, r8
-			MOV	r1, #772
+			MOV	r1, #774
 			MOV	r2, #0x0
 			MOV	r3, #32
 			MOV	r4, #32
@@ -123,7 +120,7 @@ paddle:
 			//paddle
  			MOV	r0, r8
 			ADD	r0, r0, #32
-			MOV	r1, #772
+			MOV	r1, #774
 			MOV	r2, #0x8800000
 			LDR	r3, =paddleSize
 			LDR	r3, [r3]
@@ -147,7 +144,7 @@ paddle:
 			SUB	r0, r0, #32
 			ADD	r0, r8
 
-			MOV	r1, #772
+			MOV	r1, #774
 			MOV	r2, #0x0
 			MOV	r3, #32
 			BL	makeTile
@@ -155,7 +152,7 @@ paddle:
 			//paddle
 			MOV	r0, r8
 			SUB	r0, r0, #32
-			MOV	r1, #772
+			MOV	r1, #774
 			MOV	r2, #0x8800000
 			MOV	r3, #192
 			BL	makeTile
@@ -248,7 +245,7 @@ drawInitialPaddle:
 
 	// init Paddle
 	MOV	r0, #228	// x
-	MOV	r1, #772	// y
+	MOV	r1, #774	// y
 	MOV	r2, #0x880000	// color
 	MOV	r3, #192
 	MOV	r4, #32		// height
@@ -259,7 +256,7 @@ drawInitialPaddle:
 clearPaddle:
 	PUSH	{lr}
 	MOV	r0, #36
-	MOV	r1, #772
+	MOV	r1, #774
 	MOV	r2, #0x0
 	MOV	r3, #640
 	MOV	r4, #32
