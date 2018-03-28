@@ -68,6 +68,15 @@ paddle:
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
+		//BL	checkGameWon //check if game has been won not working
+                CMP	r0, #1
+                BEQ	WIN
+
+                LDR	r0, =lifeCount
+                Ldr 	r0, [r0]
+                cmp	r0, #0
+                BEQ	LOST
+
 		BL	updateScoreAndLives
 //		BL	ballLoop
 		MOV	r0, r7			// delay
@@ -153,6 +162,33 @@ paddle:
 			BL	paddleLoop
 
 	POP	{r4-r9, pc}
+
+WIN:
+        push    {lr}
+	ldr	r0,=gamewon
+        MOV	r1, #200
+	MOV	r2, #200
+	bl      drawCenterTile
+anybutton:
+        bl 	readSNES
+	CMP     r0, #0
+        BNE	menusetup
+	B	anybutton
+        pop	{pc}
+
+LOST:
+        push    {lr}
+        BL	clearPaddle
+	ldr	r0,=gamelost
+        MOV	r1, #200
+	MOV	r2, #200
+	bl      drawCenterTile
+anybutton2:
+        bl 	readSNES
+	CMP     r0, #0
+        BNE	menusetup
+	B	anybutton2
+        pop	{pc}
 
 .global bigPaddle
 bigPaddle:
