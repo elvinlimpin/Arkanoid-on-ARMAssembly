@@ -314,7 +314,28 @@ codeToTile:
 		POPEQ	{pc}
 
 		LDR	r0, =tile29
-		POP	{pc}
+ 		POP	{pc}
+
+//returns 0 if not won or 1 if won
+.global checkGameWon
+checkGameWon:
+	push {r4, r5, lr}
+	mov r4, #0
+        ldr r5, =tile0
+checkallbricks:
+	ldrb r0, [r5, r4]
+	ADD  r4, r4, #1
+
+        CMP  r0, #0
+        MOVNE r0, #0
+        POPNE {r4,r5,pc}
+
+	CMP r4, #30
+	BLT checkallbricks
+
+	MOV r0, #1
+        POP {r4, r5, pc}
+	
 
 
 // 0 - broken
