@@ -22,9 +22,11 @@ main:
 	BL	initSNES
 	BL	Init_Frame
 
+	.global menusetup
+menusetup:
 	MOV	r4, #0 //initial state is 0
 	B	startMenuLoop
-
+    .global startMenuLoop
 	startMenuLoop:
 		BL	$
 
@@ -177,4 +179,3 @@ clearScreenLoop:
 .global gpioBaseAddress
 gpioBaseAddress:
 	.int	0
-
