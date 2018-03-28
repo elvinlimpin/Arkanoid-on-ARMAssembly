@@ -1,3 +1,46 @@
+.global	moveBall
+moveBall:
+	PUSH	{lr}
+
+	BL	isLaunched		// if no launch, don't do anything
+	CMP	r0, #0
+	POPEQ	{pc}
+
+	LDR	r0, =slopeCode
+	CMP	r0, #1
+	POPLT	{pc}
+	BEQ	moveRight
+
+	CMPNE	r0, #3
+	BLLT	moveLeft
+	POPLT	{pc}
+
+	BLEQ	moveUpRight
+	POPEQ	{pc}
+
+	BL	moveUpLeft
+	POP	{pc}
+
+moveRight:
+	PUSH	{lr}
+
+	LDR	r0, =curX
+	LDR	r1, [r0]
+	ADD	r1, r1, #32
+	STR	r1, [r0]
+
+	LDR	r0, =curY
+	LDR	r1, [r0]
+	ADD	r1, r1, #32
+	STR	r1, [r0]
+
+	BL	drawBall
+	BL	getRidOfBall
+	POP	{pc}
+
+moveLeft:	MOV	pc, lr
+moveUpRight:	MOV	pc, lr
+moveUpLeft:	MOV	pc, lr
 
 .global drawBall
 drawBall:
@@ -77,12 +120,12 @@ getRidOfBall:
 .global launchBall
 launchBall:
 	PUSH	{r4-r7, lr}
+
 	BL	isLaunched		// if already launched, ignore
 	CMP	r0, #1
 	POPEQ	{r4-r7, pc}
 
 	BL	getRidOfBall
-
 	BL	launch
 
 	POP	{r4-r7, pc}
@@ -125,3 +168,11 @@ isLaunched:
 
 
 	launched: .byte	0
+
+
+	// 0:  0 (void)
+	// 1:  2/2
+	// 2: -2/2
+	// 3:  3/2
+	// 4: -3/2
+	slopeCode:	.int	1

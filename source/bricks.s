@@ -23,7 +23,7 @@ makeBrick:
 	BL	drawBrick
 
 	POP	{r4-r6, lr}
-	MOV	PC, lr
+	MOV	pc, lr
 
 // r0 - brick x position
 // r1 - brick y position
@@ -83,13 +83,13 @@ drawBrick:
 // takes XY
 // return brick state
 getBrickState:
-        push    {lr}
+       	PUSH    {lr}
 	//convert to brick state
 	BL	XYtoCode
 	BL	codeToTile
 	// return brick state
 	LDRB	r0, [r0]
-        pop	{lr}
+        POP	{lr}
 	MOV	pc, lr
 
 

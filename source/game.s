@@ -70,6 +70,8 @@ paddle:
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
+		BL	moveBall
+
 		BL	checkGameWon //check if game has been won
                 CMP	r0, #1
                 BEQ	WIN
@@ -88,7 +90,7 @@ paddle:
 		BLEQ	pauseMenu
 
 		CMP	r0, #32768		// B
-		BLEQ	hitBrickTest
+		BLEQ	launchBall
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
