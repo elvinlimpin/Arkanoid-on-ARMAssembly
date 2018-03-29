@@ -82,16 +82,8 @@ changeSlope:
 	LDR	r0, =xandy
 	BL	printf
 
-	LDR	r0, =curX
-	LDR	r0, [r0]
-
-	LDR	r1, =curY
-	LDR	r1, [r1]
-
-	BL	hitBrick
-	CMP	r0, #0
-	BLNE	switch60
-	POPNE	{r4-r8, pc}
+	CMP	r5, #740
+	BLGE	checkIfCaught
 
 	CMP	r4,#644
 	BLGE	switch45
@@ -102,8 +94,15 @@ changeSlope:
 	CMP	r4, #36
 	BLLE	switch45
 
-	CMP	r5, #740
-	BLGE	checkIfCaught
+	LDR	r0, =curX
+	LDR	r0, [r0]
+
+	LDR	r1, =curY
+	LDR	r1, [r1]
+
+	BL	hitBrick
+	CMP	r0, #0
+//	BLNE	switch60
 
 	POP	{r4-r8, pc}
 

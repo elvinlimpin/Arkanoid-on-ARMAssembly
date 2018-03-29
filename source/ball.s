@@ -35,7 +35,6 @@ initBall:
 	CMP	r0, #0
 	POPNE	{r4-r6, pc}
 
-	BL	$
 	LDR	r5, =curX
 	STR	r4, [r5]
 	BL	drawBall

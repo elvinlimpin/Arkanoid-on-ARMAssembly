@@ -123,7 +123,7 @@ hitBrick:
 	MOV	r0, r4
 	MOV	r1, r5
 	// r2 is the color
-	BL	makeBrick	// recolor
+//	BL	makeBrick	// recolor
 
 	MOV	r0, #1		// brick is hit
 	POP	{r4-r7, lr}
