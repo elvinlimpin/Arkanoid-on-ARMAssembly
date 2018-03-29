@@ -187,7 +187,8 @@ XYtoCode:
 	MOV	r0, r4
 	MOV	r1, r5
 
-	POP	{r4,r5,pc}
+	POP	{r4,r5, lr}
+	MOV	pc, lr
 
 // params
 //r0 - xcode
