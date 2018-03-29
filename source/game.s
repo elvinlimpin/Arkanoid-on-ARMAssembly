@@ -96,7 +96,7 @@ paddle:
 		BLEQ	launchBall
 
 		CMP	r0, #16384		// Y
-		BLEQ	increaseLife
+		BLEQ	bigPaddleDrop
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
@@ -287,16 +287,6 @@ clearPaddle:
 	MOV	r4, #32
 	BL	makeTile
 	POP	{pc}
-
-
-increaseLife:
-	PUSH	{r4-r5, lr}
-
-	LDR	r4, =scoreCount
-	MOV	r5, #200
-	STR	r5, [r4]
-
-	POP	{r4-r5, pc}
 
 .section	.data
 

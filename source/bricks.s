@@ -141,7 +141,7 @@ hitBrick:
 
 dropBigPaddle:
 	PUSH	{lr}
-	BL	drawPaddleDrop
+	BL	bigPaddleDrop
 
 	POP	{pc}
 
