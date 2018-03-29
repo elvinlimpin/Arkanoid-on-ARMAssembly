@@ -134,13 +134,16 @@ hitBrick:
 		PUSH	{lr}
 
 		CMP	r0, #4
-		BLEQ	slowDownBall
-		BLNE	bigPaddle
+		BLEQ	dropSlowBall
+		BLNE	dropBigPaddle
 		POP	{lr}
 		MOV	PC, LR
 
-	slowDownBall:	MOV	pc, lr
-	makeDrop:	MOV	pc, lr	// make
+dropBigPaddle:
+	PUSH	{lr}
+	BL	drawPaddleDrop
+
+	POP	{pc}
 
 
 // r0 r1 - xy code

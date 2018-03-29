@@ -28,7 +28,6 @@ menusetup:
 	B	startMenuLoop
     .global startMenuLoop
 	startMenuLoop:
-		BL	$
 
 	    	CMP 	r4, #0 //check state
 

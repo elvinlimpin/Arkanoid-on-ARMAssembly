@@ -61,27 +61,29 @@ paddle:
 	MOV	r0, r8
 	BL	initBall
 
-	MOV	r7, #1750	// pause length
+
+	MOV	r7, #2000	// pause length
 
 	paddleLoop:
+		BL	maybeMoveBall
+
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
-		BL	moveBall
-
+		// check if won or lost
 		BL	checkGameWon //check if game has been won
-                CMP	r0, #1
-                BEQ	WIN
+        	CMP	r0, #1
+        	BLEQ	WIN
 
-                LDR	r0, =lifeCount
-                LDR 	r0, [r0]
-                CMP	r0, #0
-                BEQ	LOST
+        	LDR	r0, =lifeCount
+        	LDR 	r0, [r0]
+        	CMP	r0, #0
+        	BLEQ	LOST
 
 		BL	updateScoreAndLives
 		MOV	r0, r7			// delay
 		BL	readSNES
-		MOV	r7, #1750
+		MOV	r7, #1500
 
 		CMP	r0, #4096		// start
 		BLEQ	pauseMenu
@@ -89,24 +91,27 @@ paddle:
 		CMP	r0, #32768		// B
 		BLEQ	launchBall
 
+		CMP	r0, #16384		// Y
+		BLEQ	increaseLife
+
 		CMP	r0, #512		// L
 		BEQ	moveLeft
 		CMP	r0, #256		// R
 		BEQ	moveRight
 
 		CMP	r0, #640		// L + A
-		MOVEQ	r7, #550
+		MOVEQ	r7, #1000
 		BEQ	moveLeft
 
 		CMP	r0, #384		// R + A
-		MOVEQ	r7, #550
+		MOVEQ	r7, #1000
 		BNE	paddleLoop
 
 		moveRight:
 
 		LDR	r6, =paddleBound
-		LDR	r6, [r6]
-		CMP	r8, r6
+		LDR	r0, [r6]
+		CMP	r8, r0
 		BGE	paddleLoop
 
 			//repaint
@@ -167,13 +172,31 @@ paddle:
 
 	POP	{r4-r9, pc}
 
-WIN:
-        push    {lr}
-	BL	updateScoreAndLives
-	ldr	r0,=gamewon
-        MOV	r1, #200
-	MOV	r2, #200
-	bl      drawCenterTile
+maybeMoveBall:
+	PUSH	{r4,r5, lr}
+	LDR	r0, =willMoveBall
+	LDR	r1, [r0]
+	MOV	r4, r0
+
+	CMP	r1, #0
+	BEQ	moveBallLoop
+
+	MOV	r5, #1500
+	CMP	r7, r5
+	BGE	moveBallLoop
+
+	MOV	r1, #0
+	STR	r1, [r0]
+	POP	{r4,r5,pc}
+
+	moveBallLoop:
+		BL	moveBall
+		MOV	r1, #1
+		MOV	r0, r4
+		STR	r1, [r0]
+		POP	{r4,r5,pc}
+
+
 anybutton:
         bl 	readSNES
 	CMP     r0, #0
@@ -181,14 +204,6 @@ anybutton:
 	B	anybutton
         pop	{pc}
 
-LOST:
-        push    {lr}
-	BL	updateScoreAndLives
-        BL	clearPaddle
-	ldr	r0,=gamelost
-        MOV	r1, #200
-	MOV	r2, #200
-	bl      drawCenterTile
 anybutton2:
         bl 	readSNES
 	CMP     r0, #0
@@ -253,6 +268,8 @@ drawInitialPaddle:
 
 	POP	{pc}
 
+
+.global	clearPaddle
 clearPaddle:
 	PUSH	{lr}
 	MOV	r0, #36
@@ -262,6 +279,16 @@ clearPaddle:
 	MOV	r4, #32
 	BL	makeTile
 	POP	{pc}
+
+
+increaseLife:
+	PUSH	{r4-r5, lr}
+
+	LDR	r4, =scoreCount
+	MOV	r5, #200
+	STR	r5, [r4]
+
+	POP	{r4-r5, pc}
 
 .section	.data
 
@@ -276,3 +303,5 @@ clearPaddle:
 	paddlePosition:	.int	228
 
 	paddleBound:	.int	484
+
+	willMoveBall:	.int	1

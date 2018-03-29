@@ -95,6 +95,29 @@ intToString:
 	POP	{r4, r5, pc}
 
 
+.global LOST
+LOST:
+        PUSH    {lr}
+	BL	updateScoreAndLives
+        BL	clearPaddle
+
+	LDR	r0,=gamelost
+        MOV	r1, #200
+	MOV	r2, #200
+	BL      drawCenterTile
+	POP	{pc}
+
+.global WIN
+WIN:
+        PUSH    {lr}
+	BL	updateScoreAndLives
+
+	LDR	r0,=gamewon
+        MOV	r1, #200
+	MOV	r2, #200
+	BL      drawCenterTile
+	POP	{pc}
+
 
 .data
 	scoreChar:	.asciz		"SCORE: "
