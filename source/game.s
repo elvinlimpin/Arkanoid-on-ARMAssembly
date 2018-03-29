@@ -209,7 +209,7 @@ anybutton:
 	MOV	r0, #8192
         BL 	readSNES
 	CMP     r0, #0
-        BNE	main
+        BNE	menusetup
 	B	anybutton
 
 anybutton2:
