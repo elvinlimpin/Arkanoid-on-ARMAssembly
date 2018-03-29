@@ -23,7 +23,7 @@ makeBrick:
 
 // r0 - brick x position
 // r1 - brick y position
-// r2 - brick type (0, 1, 2)
+// r2 - brick type (0, 1, 2, 3)
 drawBrick:
 	xpos		.req	r5
 	ypos		.req	r6
@@ -55,10 +55,18 @@ drawBrick:
 	MOV	r3, #56
 	MOV	r4, #24
 
+	CMP	colorCode, #0
+	MOVEQ	r2, #0
+
 	CMP	colorCode, #1
-	MOVLT	r2, #0x00FF00	// 1 hit
+	MOVEQ	r2, #0x00FF00	// 1 hit
+
+	CMP	colorCode, #2
 	MOVEQ	r2, #0x007700	// 2 hits
-	MOVGT	r2, #0x003300	// 3 hits
+
+	CMP	colorCode, #3
+	MOVEQ	r2, #0x003300	// 3 hits
+
 
 	MOV	r0, xpos
 	MOV	r1, ypos
@@ -98,11 +106,14 @@ getBrickState:
 .global	hitBrick
 hitBrick:
 	PUSH	{r4-r7, lr}
+
+	// store brick state on register
+	BL	XYtoCode
 	MOV	r4, r0
 	MOV	r5, r1
-
-	BL	getBrickState
-	MOV	r7, r0		// store brick state on register
+	BL	codeToTile
+        LDRB	r7, [r0]
+        MOV	r6, r0
 
 	MOV	r1, r0
 	LDR	r0, =log
@@ -123,7 +134,7 @@ hitBrick:
 	MOV	r0, r4
 	MOV	r1, r5
 	// r2 is the color
-//	BL	makeBrick	// recolor
+	BL	makeBrick	// recolor
 
 	MOV	r0, #1		// brick is hit
 	POP	{r4-r7, lr}
@@ -167,7 +178,7 @@ XYtoCode:
 	MOV	r5, r2
 
 	ASR	r0, r0, #6
-	MOV	r4, r1
+	MOV	r4, r0
 
 	LDR	r0, =codeLog
 	BL	printf	//r1 - x code	// r2 - ycode
