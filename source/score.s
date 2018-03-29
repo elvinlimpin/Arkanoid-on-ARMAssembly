@@ -97,15 +97,15 @@ intToString:
 
 .global LOST
 LOST:
-        PUSH    {lr}
 	BL	updateScoreAndLives
         BL	clearPaddle
+	BL	getRidOfBall
 
 	LDR	r0,=gamelost
         MOV	r1, #200
 	MOV	r2, #200
 	BL      drawCenterTile
-	POP	{pc}
+	B	anybutton
 
 .global WIN
 WIN:
@@ -119,6 +119,19 @@ WIN:
 	POP	{pc}
 
 
+.global	resetScore
+resetScore:
+	PUSH	{lr}
+
+	LDR	r0, =scoreCount
+	MOV	r1, #0
+	STR	r1, [r0]
+
+	LDR	r0, =lifeCount
+	MOV	r1, #3
+	STR	r1, [r0]
+
+	POP	{pc}
 .data
 	scoreChar:	.asciz		"SCORE: "
 	livesChar:	.asciz		"LIVES: "

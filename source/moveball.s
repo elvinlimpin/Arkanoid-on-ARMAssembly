@@ -44,6 +44,9 @@ moveBall:
 	MOVEQ	r4, #-32
 	MOVEQ	r5, #-64
 
+	ASR	r4, r4, #1
+	ASR	r5, r5, #1
+
 	// move ball here
 	LDR	r0, =curX
 	LDR	r1, [r0]
@@ -55,8 +58,8 @@ moveBall:
 	SUB	r1, r1, r5
 	STR	r1, [r0]
 
-	BL	drawBall
 	BL	getRidOfBall
+	BL	drawBall
 
 	POP	{r4-r5,pc}
 
@@ -78,6 +81,17 @@ changeSlope:
 
 	LDR	r0, =xandy
 	BL	printf
+
+	LDR	r0, =curX
+	LDR	r0, [r0]
+
+	LDR	r1, =curY
+	LDR	r1, [r1]
+
+	BL	hitBrick
+	CMP	r0, #0
+	BLNE	switch60
+	POPNE	{r4-r8, pc}
 
 	CMP	r4,#644
 	BLGE	switch45
@@ -102,6 +116,7 @@ checkIfCaught:
 
 	LDR	r1, =paddlePosition
 	LDR	r1, [r1]
+	SUB	r1, #31
 
 	CMP	r0, r1
 	BLLT	ballDies
@@ -110,6 +125,7 @@ checkIfCaught:
 	LDR	r2, [r2]
 
 	ADD	r1, r1, r2
+	ADD	r1, r1, #31
 
 	CMP	r0, r1
 	BLGT	ballDies

@@ -9,6 +9,11 @@ drawPaddleDrop:
 	POP	{r4-r8, pc}
 
 
+.global dropSlowBall
+dropSlowBall:
+	PUSH	{r4-r8, lr}
+
+	POP	{r4-r8, pc}
 
 .section	.data
 

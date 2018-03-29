@@ -2,6 +2,8 @@
 
 .global makeGame
 makeGame:
+	BL	resetScore
+
 	MOV	r0, #4
 	MOV	r1, #4
 	MOV	r2, #0x007770
@@ -32,7 +34,7 @@ makeGame:
 initBricks:
 	PUSH	{r4-r6, lr}
 	MOV	r4, #0		// x position
-	MOV	r5, #2		// y position
+	MOV	r5, #0		// y position
 	MOV	r6, #2		// color
 
 	brickLoop:
@@ -47,7 +49,7 @@ initBricks:
 	MOV	r4, #0
 	ADD	r5, r5, #1
 	SUB	r6, #1
-	CMP	r5, #4
+	CMP	r5, #2
 	BLE	brickLoop
 
 	POP	{r4-r6, pc}
@@ -62,7 +64,7 @@ paddle:
 	BL	initBall
 
 
-	MOV	r7, #2000	// pause length
+	MOV	r7, #1500	// pause length
 
 	paddleLoop:
 		BL	maybeMoveBall
@@ -73,12 +75,14 @@ paddle:
 		// check if won or lost
 		BL	checkGameWon //check if game has been won
         	CMP	r0, #1
-        	BLEQ	WIN
+		POPEQ	{r4-r10}
+        	BEQ	WIN
 
         	LDR	r0, =lifeCount
         	LDR 	r0, [r0]
         	CMP	r0, #0
-        	BLEQ	LOST
+		POPEQ	{r4-r10}
+        	BEQ	LOST
 
 		BL	updateScoreAndLives
 		MOV	r0, r7			// delay
@@ -100,12 +104,16 @@ paddle:
 		BEQ	moveRight
 
 		CMP	r0, #640		// L + A
-		MOVEQ	r7, #1000
+		MOVEQ	r7, #750
 		BEQ	moveLeft
 
 		CMP	r0, #384		// R + A
-		MOVEQ	r7, #1000
+		MOVEQ	r7, #750
 		BNE	paddleLoop
+		BEQ	moveRight
+
+		CMP	r0, #128		//A
+		MOVEQ	r7, #750
 
 		moveRight:
 
@@ -114,27 +122,27 @@ paddle:
 		CMP	r8, r0
 		BGE	paddleLoop
 
-			//repaint
-			MOV	r0, r8
-			MOV	r1, #774
-			MOV	r2, #0x0
-			MOV	r3, #32
-			MOV	r4, #32
-			BL	makeTile
+				//repaint
+				MOV	r0, r8
+				MOV	r1, #774
+				MOV	r2, #0x0
+				MOV	r3, #32
+				MOV	r4, #32
+				BL	makeTile
 
-			//paddle
- 			MOV	r0, r8
-			ADD	r0, r0, #32
-			MOV	r1, #774
-			MOV	r2, #0x8800000
-			LDR	r3, =paddleSize
-			LDR	r3, [r3]
-			BL	makeTile
+				//paddle
+ 				MOV	r0, r8
+				ADD	r0, r0, #32
+				MOV	r1, #774
+				MOV	r2, #0x8800000
+				LDR	r3, =paddleSize
+				LDR	r3, [r3]
+				BL	makeTile
 
-			ADD	r8, r8, #32
-			LDR	r6, =paddlePosition
-			STR	r8, [r6]
-			MOV	r0, r8
+				ADD	r8, r8, #32
+				LDR	r6, =paddlePosition
+				STR	r8, [r6]
+				MOV	r0, r8
 			BL	initBall
 
 		BL	paddleLoop
@@ -143,30 +151,30 @@ paddle:
 			CMP	r8, #36
 			BLE	paddleLoop
 
-			// repaint
-			LDR	r0, =paddleSize
-			LDR	r0, [r0]
-			SUB	r0, r0, #32
-			ADD	r0, r8
+				// repaint
+				LDR	r0, =paddleSize
+				LDR	r0, [r0]
+				SUB	r0, r0, #32
+				ADD	r0, r8
 
-			MOV	r1, #774
-			MOV	r2, #0x0
-			MOV	r3, #32
-			BL	makeTile
+				MOV	r1, #774
+				MOV	r2, #0x0
+				MOV	r3, #32
+				BL	makeTile
 
-			//paddle
-			MOV	r0, r8
-			SUB	r0, r0, #32
-			MOV	r1, #774
-			MOV	r2, #0x8800000
-			MOV	r3, #192
-			BL	makeTile
+				//paddle
+				MOV	r0, r8
+				SUB	r0, r0, #32
+				MOV	r1, #774
+				MOV	r2, #0x8800000
+				MOV	r3, #192
+				BL	makeTile
 
-			SUB	r8,r8, #32
-			LDR	r6, =paddlePosition
-			STR	r8, [r6]
-			MOV	r0, r8
-			BL	initBall
+				SUB	r8,r8, #32
+				LDR	r6, =paddlePosition
+				STR	r8, [r6]
+				MOV	r0, r8
+				BL	initBall
 
 			BL	paddleLoop
 
@@ -181,7 +189,7 @@ maybeMoveBall:
 	CMP	r1, #0
 	BEQ	moveBallLoop
 
-	MOV	r5, #1500
+	MOV	r5, #1414
 	CMP	r7, r5
 	BGE	moveBallLoop
 
@@ -196,13 +204,13 @@ maybeMoveBall:
 		STR	r1, [r0]
 		POP	{r4,r5,pc}
 
-
+.global anybutton
 anybutton:
-        bl 	readSNES
+	MOV	r0, #8192
+        BL 	readSNES
 	CMP     r0, #0
-        BNE	menusetup
+        BNE	main
 	B	anybutton
-        pop	{pc}
 
 anybutton2:
         bl 	readSNES

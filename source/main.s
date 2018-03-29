@@ -25,6 +25,7 @@ main:
 	.global menusetup
 menusetup:
 	MOV	r4, #0 //initial state is 0
+	MOV	r6, #8496		// initial wait is longer
 	B	startMenuLoop
     .global startMenuLoop
 	startMenuLoop:
@@ -38,8 +39,9 @@ menusetup:
 
 		BL	drawTile
 
-		MOV	r0, #3750
+		MOV	r0, r6
 		BL	readSNES //check button press
+		MOV	r6, #3750
 
 			CMP	r0, #2048		// U
 			MOVEQ 	r4, #0
@@ -82,11 +84,9 @@ $1:	PUSH	{r0-r3, lr}
 
 .global pauseMenu
 pauseMenu:
-		PUSH	{r4, lr}
+		PUSH	{r4-r5, lr}
 		MOV	r4, #0
-
-		MOV	r0, #10000
-		BL	delayMicroseconds
+		MOV	r5, #32768
 	pauseMenuLoop:
 		BL	$
 
@@ -100,8 +100,9 @@ pauseMenu:
 
 		Import: BL	drawCenterTile
 
-		MOV	r0, #5500
+		MOV	r0, r5
 		BL	readSNES //check button press
+		MOV	r5, #2048
 
 			CMP	r0, #2048		// U
 			MOVEQ 	r4, #0
@@ -109,14 +110,14 @@ pauseMenu:
 			MOVEQ	r4, #1
 			CMP	r0, #4096		// Start
 			BLEQ	clearScreen
-			POPEQ	{r4, pc}
+			POPEQ	{r4,r5, pc}
 			CMP	r0, #128  		//A
 
 		BNE pauseMenuLoop
 
 		//branch based on state
 		CMP	r4, #0
-		POP	{r4, r0}
+		POP	{r4,r5, r0}
 		BNE	menusetup
 		BEQ	makeGame
 
