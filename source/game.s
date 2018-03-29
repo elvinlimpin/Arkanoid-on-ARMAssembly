@@ -35,7 +35,7 @@ initBricks:
 	PUSH	{r4-r6, lr}
 	MOV	r4, #0		// x position
 	MOV	r5, #0		// y position
-	MOV	r6, #2		// color
+	MOV	r6, #3		// color
 
 	brickLoop:
 		MOV	r0, r4
