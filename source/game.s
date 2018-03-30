@@ -48,11 +48,12 @@ initBricks:
 
 	MOV	r4, #0
 	ADD	r5, r5, #1
-	SUB	r6, #1
+	SUB	r6, r6, #1
 	CMP	r5, #2
 	BLE	brickLoop
 
-	POP	{r4-r6, pc}
+	POP	{r4-r6, lr}
+	mov	PC, LR
 
 paddle:
 	PUSH	{r4-r9, lr}
@@ -180,7 +181,8 @@ paddle:
 
 			BL	paddleLoop
 
-	POP	{r4-r9, pc}
+	POP	{r4-r9, lr}
+	MOV	PC, lr
 
 maybeMoveBall:
 	PUSH	{r4,r5, lr}
@@ -197,14 +199,16 @@ maybeMoveBall:
 
 	MOV	r1, #0
 	STR	r1, [r0]
-	POP	{r4,r5,pc}
+	POP	{r4,r5,lr}
+	MOV	PC,lr
 
 	moveBallLoop:
 		BL	moveBall
 		MOV	r1, #1
 		MOV	r0, r4
 		STR	r1, [r0]
-		POP	{r4,r5,pc}
+		POP	{r4,r5,lr}
+		MOV	PC, LR
 
 .global anybutton
 anybutton:
@@ -219,7 +223,7 @@ anybutton2:
 	CMP     r0, #0
         BNE	menusetup
 	B	anybutton2
-        pop	{pc}
+        
 
 .global bigPaddle
 bigPaddle:
@@ -238,7 +242,8 @@ bigPaddle:
 	MOV	r1, #292
 	STR	r1, [r0]
 
-	POP	{pc}
+	POP	{lr}
+	MOv	PC, LR
 
 .global smallPaddle
 smallPaddle:
@@ -263,7 +268,8 @@ smallPaddle:
 	MOV	r1, #228
 	STR	r1, [r0]
 
-	POP	{pc}
+	POP	{lr}
+	MOV	PC, LR
 
 drawInitialPaddle:
 	PUSH	{lr}
@@ -276,7 +282,8 @@ drawInitialPaddle:
 	MOV	r4, #32		// height
 	BL	makeTile
 
-	POP	{pc}
+	POP	{LR}
+	MOV	PC, LR
 
 
 .global	clearPaddle
@@ -288,7 +295,8 @@ clearPaddle:
 	MOV	r3, #640
 	MOV	r4, #32
 	BL	makeTile
-	POP	{pc}
+	POP	{lr}
+	MOV	PC, LR
 
 .section	.data
 

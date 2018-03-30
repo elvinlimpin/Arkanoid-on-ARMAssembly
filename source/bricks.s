@@ -11,7 +11,7 @@ makeBrick:
 	MOV	r5, r1
 	MOV	r6, r2
 	BL	codeToTile
-	STRB	r2, [r0]	// store the brick state
+	STRB	r6, [r0]	// store the brick state
 
 	MOV	r0, r4
 	MOV	r1, r5
@@ -41,13 +41,7 @@ drawBrick:
 	MOV	r4, #32
 
 	MOV	r2, #0x0
-
-
-	LDR	r8, =doTile
-	LDRB	r8, [r8]
-	CMP	r8, #1
-	BLNE	$
-	BLEQ 	makeTile		// make the outside brick
+		// make the outside brick
 
 	ADD	xpos, xpos, #4
 	ADD	ypos, ypos, #4
@@ -71,13 +65,7 @@ drawBrick:
 	MOV	r0, xpos
 	MOV	r1, ypos
 
-
-	LDR	r7, =doTile
-	LDRB	r7, [r7]
-	CMP	r7, #1
-	BLNE	$
-	BLEQ 	makeTile
-
+	BL	makeTile
 
 	POP	{r3-r8, lr}
 	MOV 	pc, lr
@@ -113,11 +101,6 @@ hitBrick:
 	MOV	r5, r1
 	BL	codeToTile
         LDRB	r7, [r0]
-        MOV	r6, r0
-
-	MOV	r1, r0
-	LDR	r0, =log
-	BL	printf
 
 	CMP	r7, #0
 
@@ -170,19 +153,43 @@ CodeToXY:
 
 // r0 r1 - xy position
 // returns r0 r1 - xy code
+.global XYtoCode
 XYtoCode:
 	PUSH	{r4,r5,lr}
-	SUB	r0, r0, #36
-	SUB	r1, r1, #64
 
-	ASR	r1, r1, #5
+	MOV	r4, r0
 	MOV	r5, r1
 
-	ASR	r0, r0, #6
-	MOV	r4, r0
+	CMP	r5, #64
+	MOVLT	r0, #44 //return a not real position
+	MOVLT	r1, #44
+        POPLT 	{r4-r5, lr}
+	MOVLT	PC, LR
 
-	MOV	r0, r4
-	MOV	r1, r5
+	CMP	r5, #160
+	MOVGT	r0, #44 //return a not real position
+	MOVGT	r1, #44
+        POPGT 	{r4-r5, lr}
+	MOVGT	PC, LR
+
+	MOV r5, #0 //default layer
+	SUB	r1, r1, #64
+	yloop:
+	CMP	r1, #32
+	SUB	r1, r1, #32
+	MOVLT	r1, r5
+	ADD	r5, r5, #1
+	BGE	yloop
+
+	MOV	r4, #0 //default start
+	SUB	r0, r0, #36
+	xloop:
+	CMP	r0, #64
+	SUB	r0, r0, #64
+	MOVLT	r0, r4
+	ADD	r4,r4, #1
+	BGE	xloop
+ 
 
 	POP	{r4,r5, lr}
 	MOV	pc, lr
@@ -204,76 +211,93 @@ codeToTile:
 	BEQ	fromTwenty
 	// invaild input, return 0
 	LDR	r0, =emptyTile
-	POP	{pc}
+	POP	{lr}
+	MOV	pc, lr
 
 
 	fromTwenty:
 		CMP	r0, #0
 		LDREQ	r0, =tile20
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #1
 		LDREQ	r0, =tile21
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 
 		CMP	r0, #2
 		LDREQ	r0, =tile22
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #3
 		LDREQ	r0, =tile23
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 
 		CMP	r0, #4
 		LDREQ	r0, =tile24
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 
 		CMP	r0, #5
 		LDREQ	r0, =tile25
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #6
 		LDREQ	r0, =tile26
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #7
 		LDREQ	r0, =tile27
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #8
 		LDREQ	r0, =tile28
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		LDR	r0, =tile29
-		POP	{pc}
+		POP	{lr}
+		MOV	pc, lr
 
 	fromZero:
 		CMP	r0, #0
 		LDREQ	r0, =tile0
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #1
 		LDREQ	r0, =tile1
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #2
 		LDREQ	r0, =tile2
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #3
 		LDREQ	r0, =tile3
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #4
 		LDREQ	r0, =tile4
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #5
 		LDREQ	r0, =tile5
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #6
 		LDREQ	r0, =tile6
@@ -281,54 +305,67 @@ codeToTile:
 
 		CMP	r0, #7
 		LDREQ	r0, =tile7
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #8
 		LDREQ	r0, =tile8
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		LDR	r0, =tile9
-		POP	{pc}
+		POP	{lr}
+		MOV	pc, lr
 
 	fromTen:
 		CMP	r0, #0
 		LDREQ	r0, =tile20
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #1
 		LDREQ	r0, =tile21
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #2
 		LDREQ	r0, =tile22
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #3
 		LDREQ	r0, =tile23
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #4
 		LDREQ	r0, =tile24
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #5
 		LDREQ	r0, =tile25
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #6
 		LDREQ	r0, =tile26
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #7
 		LDREQ	r0, =tile27
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		CMP	r0, #8
 		LDREQ	r0, =tile28
-		POPEQ	{pc}
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
 		LDR	r0, =tile29
-		POP	{pc}
+		POP	{lr}
+		MOV	pc, lr
 
 //returns 0 if not won or 1 if won
 .global checkGameWon
@@ -362,44 +399,44 @@ checkallbricks:
 // 5 - special brick 2
 .section	.data
 
-	tile0:	.byte	2
-	tile10:	.byte 	1
+	tile0:	.byte	1
+	tile10:	.byte 	2
 	tile20:	.byte 	3
 
-	tile1:	.byte	2
-	tile11:	.byte	4	// special
+	tile1:	.byte	1
+	tile11:	.byte	2	// special
 	tile21:	.byte	3
 
-	tile2:	.byte	2
-	tile12:	.byte	1
+	tile2:	.byte	1
+	tile12:	.byte	2
 	tile22:	.byte	3
 
-	tile3:	.byte	2
-	tile13:	.byte	1
+	tile3:	.byte	1
+	tile13:	.byte	2
 	tile23:	.byte	3
 
-	tile4:	.byte	2
-	tile14:	.byte	1
+	tile4:	.byte	1
+	tile14:	.byte	2
 	tile24:	.byte	3
 
-	tile5:	.byte	2
-	tile15:	.byte	1
+	tile5:	.byte	1
+	tile15:	.byte	2
 	tile25:	.byte	3
 
-	tile6:	.byte	2
-	tile16:	.byte	1
+	tile6:	.byte	1
+	tile16:	.byte	2
 	tile26:	.byte	3
 
-	tile7:	.byte	2
-	tile17:	.byte	1
+	tile7:	.byte	1
+	tile17:	.byte	2
 	tile27:	.byte	3
 
-	tile8:	.byte	2
-	tile18:	.byte	5	// special
+	tile8:	.byte	1
+	tile18:	.byte	2	// special
 	tile28:	.byte	3
 
-	tile9:	.byte	2
-	tile19:	.byte	1
+	tile9:	.byte	1
+	tile19:	.byte	2
 	tile29:	.byte	3
 
 	doTile:	.byte	1
