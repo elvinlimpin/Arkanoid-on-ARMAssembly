@@ -75,13 +75,15 @@ paddle:
 		// check if won or lost
 		BL	checkGameWon //check if game has been won
         	CMP	r0, #1
-		POPEQ	{r4-r10}
+		POPEQ	{r4-r9, lr}
+		MOVEQ	pc, lr
         	BEQ	WIN
 
         	LDR	r0, =lifeCount
         	LDR 	r0, [r0]
         	CMP	r0, #0
-		POPEQ	{r4-r10}
+		POPEQ	{r4-r9, lr}
+		MOVEQ	pc, lr
         	BEQ	LOST
 
 		BL	updateScoreAndLives

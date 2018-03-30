@@ -65,7 +65,7 @@ moveBall:
 
 
 changeSlope:
-	PUSH	{r4-r8, lr}
+	PUSH	{r4-r9, lr}
 
 	LDR	r0, =curX
 	LDR	r1, [r0]
@@ -94,17 +94,67 @@ changeSlope:
 	CMP	r4, #36
 	BLLE	switch45
 
-	LDR	r0, =curX
+	LDR	r0, =curX //top left corner
 	LDR	r0, [r0]
+
+	LDR	r1, =curY
+	LDR	r1, [r1]
+        
+
+	BL	hitBrick
+	MOV	r9, r0
+        LDR     r1, =scoreCount
+	LDR	r2, [r1]
+        add	r2, r2, r0
+	str	r2, [r1]
+
+	LDR	r0, =curX //top right corner
+	LDR	r0, [r0]
+        ADD	r0, r0, #32
 
 	LDR	r1, =curY
 	LDR	r1, [r1]
 
 	BL	hitBrick
-	CMP	r0, #0
-//	BLNE	switch60
+        LDR     r1, =scoreCount
+	LDR	r2, [r1]
+        add	r2, r2, r0
+	str	r2, [r1]
+	ORR	r9, r9, r0
 
-	POP	{r4-r8, pc}
+	LDR	r0, =curX //bottom left corner
+	LDR	r0, [r0]
+
+	LDR	r1, =curY
+	LDR	r1, [r1]
+  	ADD	r1, r1, #32
+
+	BL	hitBrick
+        LDR     r1, =scoreCount
+	LDR	r2, [r1]
+        add	r2, r2, r0
+	str	r2, [r1]
+	ORR	r9, r9, r0
+
+	LDR	r0, =curX //bottom right corner
+	LDR	r0, [r0]
+	ADD	r0, r0, #32
+
+	LDR	r1, =curY
+	LDR	r1, [r1]
+  	ADD	r1, r1, #32
+
+	BL	hitBrick
+        LDR     r1, =scoreCount
+	LDR	r2, [r1]
+        add	r2, r2, r0
+	str	r2, [r1]
+	ORR	r9, r9, r0
+        CMP	r9, #0
+	BLNE	switch60
+
+	POP	{r4-r9, lr}
+	mov      pc, LR
 
 
 checkIfCaught:

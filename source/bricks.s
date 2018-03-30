@@ -147,6 +147,7 @@ hitBrick:
 		CMP	r0, #4
 		BLEQ	dropSlowBall
 		BLNE	dropBigPaddle
+		MOV	r0, #1
 		POP	{lr}
 		MOV	PC, LR
 
@@ -162,6 +163,7 @@ dropBigPaddle:
 CodeToXY:
 	LSL	r0, r0, #6
 	ADD	r0, r0, #36
+
 	LSL	r1, r1, #5
 	ADD	r1, r1, #64
 	MOV	pc, lr
@@ -173,16 +175,11 @@ XYtoCode:
 	SUB	r0, r0, #36
 	SUB	r1, r1, #64
 
-	ASR	r2, r1, #5
-	SUB	r2, r2, #-1
-	MOV	r5, r2
+	ASR	r1, r1, #5
+	MOV	r5, r1
 
 	ASR	r0, r0, #6
 	MOV	r4, r0
-
-	LDR	r0, =codeLog
-	BL	printf	//r1 - x code	// r2 - ycode
-
 
 	MOV	r0, r4
 	MOV	r1, r5
@@ -343,16 +340,17 @@ checkGameWon:
 checkallbricks:
 	ldrb r0, [r5, r4]
 	ADD  r4, r4, #1
-
         CMP  r0, #0
         MOVNE r0, #0
-        POPNE {r4,r5,pc}
+        POPNE {r4,r5,lr}
+	MOVNE PC, lr
 
 	CMP r4, #30
 	BLT checkallbricks
 
 	MOV r0, #1
-        POP {r4, r5, pc}
+        POP {r4, r5, lr}
+	MOV pc, lr
 	
 
 
@@ -369,7 +367,7 @@ checkallbricks:
 	tile20:	.byte 	3
 
 	tile1:	.byte	2
-	tile11:	.byte	5	// special
+	tile11:	.byte	4	// special
 	tile21:	.byte	3
 
 	tile2:	.byte	2
@@ -397,7 +395,7 @@ checkallbricks:
 	tile27:	.byte	3
 
 	tile8:	.byte	2
-	tile18:	.byte	4	// special
+	tile18:	.byte	5	// special
 	tile28:	.byte	3
 
 	tile9:	.byte	2
@@ -408,3 +406,5 @@ checkallbricks:
 
 	emptyTile:	.byte	0
 	codeLog:	.asciz	"code: (%d, %d)\n"
+
+	test:		.asciz  "array values: {%d}, %d"
