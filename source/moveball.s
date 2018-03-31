@@ -63,7 +63,6 @@ moveBall:
 
 	POP	{r4-r5,pc}
 
-
 changeSlope:
 	PUSH	{r4-r9, lr}
 
@@ -94,19 +93,29 @@ changeSlope:
 	CMP	r4, #36
 	BLLE	switch45
 
+	BL	checkCorners
+
+	POP	{r4-r9, lr}
+	mov      pc, LR
+
+topleft:
+	push 	{lr}
 	LDR	r0, =curX //top left corner
 	LDR	r0, [r0]
 
 	LDR	r1, =curY
 	LDR	r1, [r1]
 
-	BL	hitBrick
-	MOV	r9, r0
+	BL	hitBrick //returns if hit
         LDR     r1, =scoreCount
 	LDR	r2, [r1]
         ADD	r2, r2, r0
 	STR	r2, [r1]
+	pop	{lr}
+	MOV	PC, LR
 
+topright:
+	push 	{lr}
 	LDR	r0, =curX //top right corner
 	LDR	r0, [r0]
         ADD	r0, r0, #32
@@ -114,13 +123,16 @@ changeSlope:
 	LDR	r1, =curY
 	LDR	r1, [r1]
 
-	BL	hitBrick
+	BL	hitBrick //returns if hit
         LDR     r1, =scoreCount
 	LDR	r2, [r1]
         add	r2, r2, r0
 	str	r2, [r1]
-	ORR	r9, r9, r0
+	POP	{lr}
+	mov      pc, LR
 
+bottomleft:
+	push 	{lr}	
 	LDR	r0, =curX //bottom left corner
 	LDR	r0, [r0]
 
@@ -133,8 +145,11 @@ changeSlope:
 	LDR	r2, [r1]
         ADD	r2, r2, r0
 	STR	r2, [r1]
-	ORR	r9, r9, r0
+	POP	{lr}
+	mov      pc, LR
 
+bottomright:
+	push 	{lr}
 	LDR	r0, =curX //bottom right corner
 	LDR	r0, [r0]
 	ADD	r0, r0, #32
@@ -148,8 +163,69 @@ changeSlope:
 	LDR	r2, [r1]
         add	r2, r2, r0
 	str	r2, [r1]
-	ORR	r9, r9, r0
-        CMP	r9, #0
+	POP	{lr}
+	mov      pc, LR
+//Does not take or return arguments
+checkCorners: //makes function calls to avoid checking the same brick
+	PUSH	{r4-r9, lr}
+
+	BL topleft //check this corner initally
+	//r9 keeps track of if the ball should change direction
+	MOV 	r9, r0
+	
+	LDR	r4, =curX //r4 is x
+	LDR	r4, [r4]
+
+	LDR	r5, =curY //r5 is y
+	LDR	r5, [r5]
+
+	MOV	r0, r4
+	MOV	r1, r5
+	BL	XYtoCode
+	MOV	r6, r0 //r6 is top left x (till bottom right)
+	MOV	r7, r1 //r7 is top left y (till bottom right)
+	
+	MOV	r0, r4
+	ADD	r1,r5, #32 //bottom left
+	BL	XYtoCode
+	
+	CMP	r1, r7
+	BLNE	bottomleft //calls bottom left if different tile from top left
+	ORRNE	r9, r9, r0
+
+	ADD	r0, r4, #32
+	MOV	r1, r5
+	BL	XYtoCode
+
+	CMP 	r6, r0
+	MOV	r6, r0 //store thes values for next check
+	MOV	r7, r1
+	BLNE	topright //if top right and top left are different check hits
+	ORRNE	r9, r9, r0
+
+	//this section deals with bottom right, top right and bottom left affect this
+	ADD	r0, r4, #32
+	ADD	r1, r5, #32 //bottom right
+	BL	XYtoCode
+	cmp 	r0, r6
+	BEQ	skip
+	
+	MOV	r6, r0
+	MOV	r7, r1
+
+        //check top right
+	ADD	r0, r4, #32
+	MOV	r1, r5
+	BL	XYtoCode
+
+	CMP	r1, r7
+	BEQ	skip
+
+	BL	bottomright
+
+	
+	//label if bottom right doesn't need to be checked
+skip:   CMP	r9, #0
 	BLNE	switch60
 
 	POP	{r4-r9, lr}

@@ -241,6 +241,11 @@ XYtoCode:
 codeToTile:
 	PUSH	{lr}
 
+	CMP	r0, #9
+	LDRGT	r0, =emptyTile //error check first value
+	POPGT	{lr}
+	MOVGT	pc, lr
+
 	CMP	r1, #1
 	BLT	fromZero
 	BEQ	fromTen
