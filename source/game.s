@@ -53,7 +53,6 @@ paddle:
 		BL	checkGameWon //check if game has been won
         	CMP	r0, #1
 		POPEQ	{r4-r9, lr}
-		MOVEQ	pc, lr
         	BEQ	WIN
 
         	LDR	r0, =lifeCount
