@@ -45,6 +45,19 @@ paddle:
 
 	paddleLoop:
 		BL	maybeMoveBall
+		BL	makeAllBricks //ensure no half bricks left
+
+		//ensure padde is fully drawn
+		LDR	r6, =paddleBound
+		LDR	r0, [r6]
+
+		//paddle
+ 		MOV	r0, r8
+		MOV	r1, #774
+		MOV	r2, #0x8800000
+		LDR	r3, =paddleSize
+		LDR	r3, [r3]
+		BL	makeTile
 
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]

@@ -404,7 +404,7 @@ codeToTile:
 		LDR	r0, =tile19
 		POP	{lr}
 		MOV	pc, lr
-
+.global makeAllBricks
 makeAllBricks:
 	PUSH	{r4-r6, lr}
 	MOV	r4, #0
@@ -420,7 +420,8 @@ makeAllBricks:
 		MOV	r2, r6
 		MOV	r0, r4
 		MOV	r1, r5
-		BL	drawBrick
+		CMP	r2, #0
+		BLNE	drawBrick
 
 		//check X
 		ADD	r4, r4, #1
