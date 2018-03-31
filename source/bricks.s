@@ -156,7 +156,7 @@ CodeToXY:
 	ADD	r0, r0, #36
 
 	LSL	r1, r1, #5
-	ADD	r1, r1, #64
+	ADD	r1, r1, #96
 	MOV	pc, lr
 
 // r0 r1 - xy position
@@ -168,21 +168,20 @@ XYtoCode:
 	MOV	r4, r0
 	MOV	r5, r1
 
-	CMP	r5, #64
+	CMP	r5, #96
 	MOVLT	r0, #44 //return a not real position
 	MOVLT	r1, #44
         POPLT 	{r4-r5, lr}
 	MOVLT	PC, LR
 
-	CMP	r5, #160
+	CMP	r5, #192
 	MOVGT	r0, #44 //return a not real position
 	MOVGT	r1, #44
         POPGT 	{r4-r5, lr}
 	MOVGT	PC, LR
 
-	MOV r5, #0 //default layer
-	SUB	r1, r1, #64
-
+	MOV	r5, #0 //default layer
+	SUB	r1, r1, #96
 	yloop:
 	CMP	r1, #32
 	SUB	r1, r1, #32
@@ -211,6 +210,11 @@ XYtoCode:
 // r0 - brickStateAddress
 codeToTile:
 	PUSH	{lr}
+
+	CMP	r0, #9
+	LDRGT	r0, =emptyTile
+	POPGT	{lr}
+	MOVGT	pc, lr
 
 	CMP	r1, #1
 	BLT	fromZero
