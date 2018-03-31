@@ -45,6 +45,7 @@ paddle:
 
 	paddleLoop:
 		BL	maybeMoveBall
+		BL	dropListener
 
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
@@ -72,8 +73,8 @@ paddle:
 		CMP	r0, #32768		// B
 		BLEQ	launchBall
 
-		CMP	r0, #16384		// Y
-		BLEQ	bigPaddleDrop
+//		CMP	r0, #16384		// Y
+//		BLEQ	bigPaddleDrop
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
@@ -206,8 +207,7 @@ bigPaddle:
 	MOV	r1, #292
 	STR	r1, [r0]
 
-	POP	{lr}
-	MOv	PC, LR
+	POP	{pc}
 
 .global smallPaddle
 smallPaddle:

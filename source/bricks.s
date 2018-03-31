@@ -19,12 +19,10 @@ initBricks:
 		LDR	r0, =log1
 		BL	printf
 
-		CMP	r0, #0
-
-		MOVNE	r2, r6
-		MOVNE	r0, r4
-		MOVNE	r1, r5
-		BLNE	drawBrick
+		MOV	r2, r6
+		MOV	r0, r4
+		MOV	r1, r5
+		BL	drawBrick
 
 		//check X
 		ADD	r4, r4, #1
@@ -104,7 +102,6 @@ hitBrick:
 	BL	XYtoCode
 	MOV	r4, r0		// code x
 	MOV	r5, r1		// code y
-
 	BL	codeToTile	// gets the code value
         LDRB	r7, [r0]
 
@@ -117,7 +114,6 @@ hitBrick:
 	CMP	r7, #3		// check if normal brick
 	SUBLE	r2, r7, #1	// normal brick, degrade the brick
 
-//	BLGT	specialTile	// not a normal brick, do something
 	MOVGT	r2, #0		// brick is now gone
 	MOVGT	r6, r2
 
@@ -133,53 +129,34 @@ hitBrick:
         MOV	pc, lr
 
 
-	specialTile:
-		PUSH	{lr}
-
-		CMP	r0, #4
-		BLEQ	dropSlowBall
-		BLNE	dropBigPaddle
-		MOV	r0, #1
-		POP	{lr}
-		MOV	PC, LR
-
-
 makeAllBricks:
 	PUSH	{r4-r6, lr}
-	MOV	r4, #0
-	MOV	r5, #0
+	MOV	r4, #9
+	MOV	r5, #2
 
 	getBrickStateLoop:
 		MOV	r0, r4
 		MOV	r1, r5
 
 		BL	codeToTile
-		LDRB	r6, [r0]
-
-		MOV	r2, r6
+		LDRB	r2, [r0]
 		MOV	r0, r4
 		MOV	r1, r5
 		BL	drawBrick
 
 		//check X
-		ADD	r4, r4, #1
-		CMP	r4, #10
-		BLT	getBrickStateLoop
+		SUB	r5, r5, #1
+		CMP	r5, #0
+		BGE	getBrickStateLoop
 
 		//check Y
-			ADD	r5, r5, #1
-			CMP	r5, #3
-			MOVLT	r4, #0
-			BLT	getBrickStateLoop
+			SUB	r4, r4, #1
+			CMP	r4, #0
+			MOVGE	r5, #9
+			BGE	getBrickStateLoop
 
 	POP	{r4-r6, lr}
 	MOV	pc, lr
-
-dropBigPaddle:
-	PUSH	{lr}
-	BL	bigPaddleDrop
-
-	POP	{pc}
 
 
 // r0 r1 - xy code
@@ -194,7 +171,7 @@ CodeToXY:
 
 // r0 r1 - xy position
 // returns r0 r1 - xy code
-.global XYtoCode
+
 XYtoCode:
 	PUSH	{r4,r5,lr}
 
@@ -456,6 +433,8 @@ checkallbricks:
 
 	tile0:	.byte	1
 	tile10:	.byte 	2
+
+	.global	tile20
 	tile20:	.byte 	3
 
 	tile1:	.byte	1
@@ -492,6 +471,8 @@ checkallbricks:
 
 	tile9:	.byte	1
 	tile19:	.byte	2
+
+	.global	tile29
 	tile29:	.byte	3
 
 
