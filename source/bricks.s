@@ -1,5 +1,47 @@
 .section .text
 
+.global	initBricks
+initBricks:
+	PUSH	{r4-r6, lr}
+
+	MOV	r4, #0
+	MOV	r5, #0
+	ADD	r6, r5, #1
+
+	initBrickStateLoop:
+		MOV	r0, r4
+		MOV	r1, r5
+
+		BL	codeToTile
+		STRB	r6, [r0]
+
+		MOV	r1, r5
+		LDR	r0, =log1
+		BL	printf
+
+		CMP	r0, #0
+
+		MOVNE	r2, r6
+		MOVNE	r0, r4
+		MOVNE	r1, r5
+		BLNE	drawBrick
+
+		//check X
+		ADD	r4, r4, #1
+		CMP	r4, #10
+		BLT	initBrickStateLoop
+
+		//check Y
+			ADD	r5, r5, #1
+			ADD	r6, r5, #1
+			CMP	r5, #3
+			MOVLT	r4, #0
+			BLT	initBrickStateLoop
+
+
+	BL	makeAllBricks
+	POP	{r4-r6, pc}
+
 
 // r0 - brick x position
 // r1 - brick y position
@@ -87,8 +129,6 @@ hitBrick:
 	BL	codeToTile
 	STRB	r6, [r0]
 
-	BL	makeAllBricks
-
 	MOV	r0, #1		// brick is hit
 	POP	{r4-r7, lr}
         MOV	pc, lr
@@ -106,16 +146,23 @@ hitBrick:
 
 .global makeAllBricks
 makeAllBricks:
-	PUSH	{r4, r5, lr}
-	MOV	r0, #9
-	MOV	r1, #2
+	PUSH	{r4-r6, lr}
+	MOV	r4, #36
+	MOV	r5, #96
 
+	MOV	r0, r4
+	MOV	r1, r5
+	BL	XYtoCode
 	MOV	r4, r0
 	MOV	r5, r1
 
 	getBrickStateLoop:
+		MOV	r0, r4
+		MOV	r1, r5
+
 		BL	codeToTile
 		LDRB	r0, [r0]
+		MOV	r6, r0
 
 		MOV	r1, r0
 		LDR	r0, =log
@@ -123,23 +170,23 @@ makeAllBricks:
 
 		CMP	r0, #0
 
-		MOVNE	r2, r0
+		MOVNE	r2, r6
 		MOVNE	r0, r4
 		MOVNE	r1, r5
 		BLNE	drawBrick
 
 		//check X
 		ADD	r4, r4, #1
-		CMP	r4, #9
-		BLE	getBrickStateLoop
+		CMP	r4, #10
+		BLT	getBrickStateLoop
 
 		//check Y
 			ADD	r5, r5, #1
-			CMP	r5, #2
-			MOVLE	r4, #0
-			BLE	getBrickStateLoop
+			CMP	r5, #3
+			MOVLT	r4, #0
+			BLT	getBrickStateLoop
 
-	POP	{r4, r5, lr}
+	POP	{r4-r6, lr}
 	MOV	pc, lr
 
 dropBigPaddle:
@@ -169,35 +216,36 @@ XYtoCode:
 	MOV	r5, r1
 
 	CMP	r5, #96
-	MOVLT	r0, #44 //return a not real position
+	MOVLT	r0, #44		//return a not real position
 	MOVLT	r1, #44
         POPLT 	{r4-r5, lr}
 	MOVLT	PC, LR
 
 	CMP	r5, #192
-	MOVGT	r0, #44 //return a not real position
+	MOVGT	r0, #44		//return a not real position
 	MOVGT	r1, #44
         POPGT 	{r4-r5, lr}
 	MOVGT	PC, LR
 
-	MOV	r5, #0 //default layer
+	MOV	r5, #0		//default layer
 	SUB	r1, r1, #96
-	yloop:
-	CMP	r1, #32
-	SUB	r1, r1, #32
-	MOVLT	r1, r5
-	ADD	r5, r5, #1
-	BGE	yloop
 
-	MOV	r4, #0 //default start
-	SUB	r0, r0, #36
+	yloop:
+		CMP	r1, #32
+		SUB	r1, r1, #32
+		MOVLT	r1, r5		// exit with this valur
+		ADD	r5, r5, #1
+		BGE	yloop
+
+		MOV	r4, #0		//default start
+		SUB	r0, r0, #36
 
 	xloop:
-	CMP	r0, #64
-	SUB	r0, r0, #64
-	MOVLT	r0, r4
-	ADD	r4,r4, #1
-	BGE	xloop
+		CMP	r0, #64
+		SUB	r0, r0, #64
+		MOVLT	r0, r4		// exit with this value
+		ADD	r4,r4, #1
+		BGE	xloop
 
 	POP	{r4,r5, lr}
 	MOV	pc, lr
@@ -457,3 +505,5 @@ checkallbricks:
 	codeLog:	.asciz	"code: (%d, %d)\n"
 
 	test:		.asciz  "array values: {%d}, %d"
+
+	log1:		.asciz	"yvalue: %d\n"

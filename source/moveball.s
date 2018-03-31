@@ -152,6 +152,7 @@ changeSlope:
         CMP	r9, #0
 	BLNE	switch60
 
+	BL	makeAllBricks
 	POP	{r4-r9, lr}
 	mov      pc, LR
 

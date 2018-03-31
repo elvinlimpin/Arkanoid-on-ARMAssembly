@@ -97,7 +97,6 @@ intToString:
 
 .global LOST
 LOST:
-	BL	$
 	BL	updateScoreAndLives
         BL	clearPaddle
 	BL	getRidOfBall

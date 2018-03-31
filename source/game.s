@@ -22,14 +22,14 @@ makeGame:
 
 	BL	initScore
 	BL	initLives
-	BL	makeAllBricks
+	BL	initBricks
 
 	LDR	r0, =paddlePosition
 	MOV	r1, #228
 	STR	r1, [r0]
 
 	BL	paddle
-	B	terminate
+	B	LOST
 
 paddle:
 	PUSH	{r4-r9, lr}
@@ -59,9 +59,7 @@ paddle:
         	LDR	r0, =lifeCount
         	LDR 	r0, [r0]
         	CMP	r0, #0
-		POPEQ	{r4-r9, lr}
-		MOVEQ	pc, lr
-        	BEQ	LOST
+		POPEQ	{r4-r9, pc}
 
 		BL	updateScoreAndLives
 		MOV	r0, r7			// delay
@@ -124,7 +122,7 @@ paddle:
 				MOV	r0, r8
 			BL	initBall
 
-		BL	paddleLoop
+		B	paddleLoop
 
 		moveLeft:
 			CMP	r8, #36
@@ -155,10 +153,7 @@ paddle:
 				MOV	r0, r8
 				BL	initBall
 
-			BL	paddleLoop
-
-	POP	{r4-r9, lr}
-	MOV	PC, lr
+			B	paddleLoop
 
 maybeMoveBall:
 	PUSH	{r4,r5, lr}
@@ -188,18 +183,11 @@ maybeMoveBall:
 
 .global anybutton
 anybutton:
-	MOV	r0, #32684
+	MOV	r0, #8192
         BL 	readSNES
 	CMP     r0, #0
         BNE	menusetup
 	B	anybutton
-
-anybutton2:
-        bl 	readSNES
-	CMP     r0, #0
-        BNE	menusetup
-	B	anybutton2
-        
 
 .global bigPaddle
 bigPaddle:
