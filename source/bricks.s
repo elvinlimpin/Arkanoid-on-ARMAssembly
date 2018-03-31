@@ -38,8 +38,6 @@ initBricks:
 			MOVLT	r4, #0
 			BLT	initBrickStateLoop
 
-
-	BL	makeAllBricks
 	POP	{r4-r6, pc}
 
 
@@ -121,14 +119,15 @@ hitBrick:
 
 //	BLGT	specialTile	// not a normal brick, do something
 	MOVGT	r2, #0		// brick is now gone
-
+	MOVGT	r6, r2
 
 	MOV	r0, r4
 	MOV	r1, r5
-	MOV	r6, r2
+	MOV	r2, r6
 	BL	codeToTile
 	STRB	r6, [r0]
 
+	BL	makeAllBricks
 	MOV	r0, #1		// brick is hit
 	POP	{r4-r7, lr}
         MOV	pc, lr
@@ -144,36 +143,23 @@ hitBrick:
 		POP	{lr}
 		MOV	PC, LR
 
-.global makeAllBricks
+
 makeAllBricks:
 	PUSH	{r4-r6, lr}
-	MOV	r4, #36
-	MOV	r5, #96
-
-	MOV	r0, r4
-	MOV	r1, r5
-	BL	XYtoCode
-	MOV	r4, r0
-	MOV	r5, r1
+	MOV	r4, #0
+	MOV	r5, #0
 
 	getBrickStateLoop:
 		MOV	r0, r4
 		MOV	r1, r5
 
 		BL	codeToTile
-		LDRB	r0, [r0]
-		MOV	r6, r0
+		LDRB	r6, [r0]
 
-		MOV	r1, r0
-		LDR	r0, =log
-		BL	printf
-
-		CMP	r0, #0
-
-		MOVNE	r2, r6
-		MOVNE	r0, r4
-		MOVNE	r1, r5
-		BLNE	drawBrick
+		MOV	r2, r6
+		MOV	r0, r4
+		MOV	r1, r5
+		BL	drawBrick
 
 		//check X
 		ADD	r4, r4, #1
@@ -269,11 +255,12 @@ codeToTile:
 	BEQ	fromTen
 
 	CMPGT	r1, #2
-	BEQ	fromTwenty
-	// invaild input, return 0
-	LDR	r0, =emptyTile
-	POP	{lr}
-	MOV	pc, lr
+		BEQ	fromTwenty
+
+		// invaild input, return 0
+		LDR	r0, =emptyTile
+		POP	{lr}
+		MOV	pc, lr
 
 
 	fromTwenty:
@@ -325,10 +312,12 @@ codeToTile:
 		POPEQ	{lr}
 		MOVEQ	pc, lr
 
-		LDR	r0, =tile29
-		POP	{lr}
-		MOV	pc, lr
+		CMP	r0, #9
+		LDREQ	r0, =tile29
+		POPEQ	{lr}
+		MOVEQ	pc, lr
 
+		B	terminate
 	fromZero:
 		CMP	r0, #0
 		LDREQ	r0, =tile0
@@ -374,9 +363,11 @@ codeToTile:
 		POPEQ	{lr}
 		MOVEQ	pc, lr
 
-		LDR	r0, =tile9
-		POP	{lr}
-		MOV	pc, lr
+		CMP	r0, #9
+		LDREQ	r0, =tile9
+		POPEQ	{lr}
+		MOVEQ	pc, lr
+		B	terminate
 
 	fromTen:
 		CMP	r0, #0
@@ -424,9 +415,12 @@ codeToTile:
 		POPEQ	{lr}
 		MOVEQ	pc, lr
 
-		LDR	r0, =tile29
-		POP	{lr}
-		MOV	pc, lr
+		CMP	r0, #9
+		LDREQ	r0, =tile29
+		POPEQ	{lr}
+		MOVEQ	pc, lr
+		B	terminate
+
 
 //returns 0 if not won or 1 if won
 .global checkGameWon
