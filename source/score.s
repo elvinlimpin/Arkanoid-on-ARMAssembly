@@ -97,6 +97,7 @@ intToString:
 
 .global LOST
 LOST:
+	BL	$
 	BL	updateScoreAndLives
         BL	clearPaddle
 	BL	getRidOfBall
@@ -129,6 +130,24 @@ resetScore:
 
 	LDR	r0, =lifeCount
 	MOV	r1, #3
+	STR	r1, [r0]
+
+	LDR	r0, =slopeCode
+	MOV	r1, #0
+	STR	r1, [r0]
+
+	LDR	r0, =prevX
+	MOV	r1, #326
+	STR	r1, [r0]
+
+	LDR	r0, =curX
+	STR	r1, [r0]
+
+	LDR	r0, =prevY
+	MOV	r1, #740
+	STR	r1, [r0]
+
+	LDR	r0, =curY
 	STR	r1, [r0]
 
 	POP	{pc}

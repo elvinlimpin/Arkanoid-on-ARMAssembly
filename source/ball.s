@@ -139,7 +139,11 @@ isLaunched:
 	POP	{pc}
 
 .section	.data
+
+	.global	prevX
 	prevX:	.int	326
+
+	.global	prevY
 	prevY:	.int	740
 
 	.global curX

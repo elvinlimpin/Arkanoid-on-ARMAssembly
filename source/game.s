@@ -22,7 +22,7 @@ makeGame:
 
 	BL	initScore
 	BL	initLives
-	BL	initBricks
+	BL	makeAllBricks
 
 	LDR	r0, =paddlePosition
 	MOV	r1, #228
@@ -30,30 +30,6 @@ makeGame:
 
 	BL	paddle
 	B	terminate
-
-initBricks:
-	PUSH	{r4-r6, lr}
-	MOV	r4, #0		// x position
-	MOV	r5, #0		// y position
-	MOV	r6, #3		// color
-
-	brickLoop:
-		MOV	r0, r4
-		MOV	r1, r5
-		MOV	r2, r6
-		BL	makeBrick
-		ADD	r4, r4, #1
-		CMP	r4, #9
-		BLE	brickLoop
-
-	MOV	r4, #0
-	ADD	r5, r5, #1
-	SUB	r6, r6, #1
-	CMP	r5, #2
-	BLE	brickLoop
-
-	POP	{r4-r6, lr}
-	mov	PC, LR
 
 paddle:
 	PUSH	{r4-r9, lr}
@@ -212,7 +188,7 @@ maybeMoveBall:
 
 .global anybutton
 anybutton:
-	MOV	r0, #8192
+	MOV	r0, #32684
         BL 	readSNES
 	CMP     r0, #0
         BNE	menusetup

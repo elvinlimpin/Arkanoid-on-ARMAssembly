@@ -99,14 +99,13 @@ changeSlope:
 
 	LDR	r1, =curY
 	LDR	r1, [r1]
-        
 
 	BL	hitBrick
 	MOV	r9, r0
         LDR     r1, =scoreCount
 	LDR	r2, [r1]
-        add	r2, r2, r0
-	str	r2, [r1]
+        ADD	r2, r2, r0
+	STR	r2, [r1]
 
 	LDR	r0, =curX //top right corner
 	LDR	r0, [r0]
@@ -132,8 +131,8 @@ changeSlope:
 	BL	hitBrick
         LDR     r1, =scoreCount
 	LDR	r2, [r1]
-        add	r2, r2, r0
-	str	r2, [r1]
+        ADD	r2, r2, r0
+	STR	r2, [r1]
 	ORR	r9, r9, r0
 
 	LDR	r0, =curX //bottom right corner
@@ -160,25 +159,46 @@ changeSlope:
 checkIfCaught:
 	PUSH	{lr}
 
-	LDR	r0, =curX
+	LDR	r0, =curX		// get ball x
 	LDR	r0, [r0]
 
-	LDR	r1, =paddlePosition
+	LDR	r1, =paddlePosition	// get paddle X (left bound)
 	LDR	r1, [r1]
-	SUB	r1, #31
+	ADD	r1, #32
+
+	CMP	r0, r1			// if not caught, check extended paddle range
+	MOVLT	r2, #0
+	BLLT	checkExtendedPaddle	// for 45 degree launch
+	POPLT	{pc}
+
+	LDR	r2, =paddleSize		// get end of paddle
+	LDR	r2, [r2]		// right bound
+
+	ADD	r1, r1, r2		// get unextended paddle range
+	SUB	r1, r1, #32
 
 	CMP	r0, r1
-	BLLT	ballDies
-
-	LDR	r2, =paddleSize
-	LDR	r2, [r2]
-
-	ADD	r1, r1, r2
-	ADD	r1, r1, #31
-
-	CMP	r0, r1
-	BLGT	ballDies
+	MOVGT	r2, #1
+	BLGT	checkExtendedPaddle
 	BLLE	switch60
+
+	POP	{pc}
+
+// r0 - ball x
+// r1 - paddle x
+// r2 - left or right side?
+checkExtendedPaddle:
+	PUSH	{lr}
+
+	CMP	r2, #0		// is this the left side or the right side?
+	SUBEQ	r1, r1, #64
+	ADDNE	r1, r1, #64
+
+	CMPEQ	r0, r1		// right side, r0 has to be greater
+	CMPNE	r1, r0		// left side, r1 has to be greater
+
+	BLGT	switch45Paddle
+	BLLT	ballDies
 
 	POP	{pc}
 
@@ -227,9 +247,6 @@ switch60:
 
 	POP	{pc}
 
-//returns
-//0 if good
-//1 for error
 
 switch45:
 	PUSH	{lr}
@@ -262,6 +279,29 @@ switch45:
 
 	STR	r2, [r0]
 	POP	{pc}
+
+
+switch45Paddle:
+	PUSH	{lr}
+	LDR	r0, =slopeCode
+	LDR	r1, [r0]
+	MOV	r2, #0
+
+	CMP	r1, #21
+	MOVEQ	r2, #7
+
+	CMP	r1, #1
+	MOVEQ	r2, #7
+
+	CMP	r1, #3
+	MOVEQ	r2, #9
+
+	CMP	r1, #23
+	MOVEQ	r2, #9
+
+	STR	r2, [r0]
+	POP	{pc}
+
 
 .section	.data
 

@@ -22,11 +22,14 @@ main:
 	BL	initSNES
 	BL	Init_Frame
 
-	.global menusetup
+.global menusetup
 menusetup:
-	MOV	r4, #0 //initial state is 0
+	MOV	r4, #0 			//initial state is 0
 	MOV	r6, #8496		// initial wait is longer
-	B	startMenuLoop
+
+	MOV	r0, r6
+	BL	readSNES
+
     .global startMenuLoop
 	startMenuLoop:
 
@@ -86,7 +89,11 @@ $1:	PUSH	{r0-r3, lr}
 pauseMenu:
 		PUSH	{r4-r5, lr}
 		MOV	r4, #0
-		MOV	r5, #32768
+		MOV	r5, #16384
+
+		MOV	r0, r5
+		BL	readSNES
+
 	pauseMenuLoop:
 		BL	$
 
@@ -94,53 +101,55 @@ pauseMenu:
 
     		MOV 	r1, #200
     		MOV 	r2, #200
- 
+
     		LDREQ	r0, =pauserestart
     		LDRNE	r0, =pausequit
 
-		Import: BL	drawCenterTile
-
+		BL	drawCenterTile
 		MOV	r0, r5
 		BL	readSNES //check button press
 		MOV	r5, #2048
 
 			CMP	r0, #2048		// U
 			MOVEQ 	r4, #0
+
 			CMP	r0, #1024		// D
 			MOVEQ	r4, #1
+
 			CMP	r0, #4096		// Start
 			BLEQ	clearScreen
+			MOVEQ	r0, #16384
+			BLEQ	readSNES
 			POPEQ	{r4,r5, pc}
-			CMP	r0, #128  		//A
 
+			CMP	r0, #128  		//A
 		BNE pauseMenuLoop
 
 		//branch based on state
-		CMP	r4, #0
+		CMP	r4, #0		// restart if equal
 		POP	{r4,r5, r0}
-		BNE	menusetup
-		BEQ	makeGame
+		BNE	menusetup	// returns to menu
+		BEQ	makeGame	// restarts the game
 
 clearScreen:
 	PUSH	{r4,r5, lr}
-	
+
 	MOV r4, #260 //start x position of where menu is drawn
 	MOV r5, #380 //start y position of where meun is drawn
-	
-clearScreenLoop:
-    MOV r0, r4
-    MOV r1, r5
-    MOV r2, #0
-    BL drawPx
-    
-    ADD r4, r4, #1
-    CMP r4, #460
-    MOVEQ	r4, #260
-    ADDEQ   r5, r5, #1
-    
-    CMP		r5, #580
-    BLT		clearScreenLoop
-    
+
+	clearScreenLoop:
+	MOV	r0, r4
+    	MOV	r1, r5
+    	MOV	r2, #0
+    	BL	drawPx
+
+   	ADD	r4, r4, #1
+    	CMP	r4, #460
+    	MOVEQ	r4, #260
+
+    	ADDEQ   r5, r5, #1
+   	CMP	r5, #580
+        BLT	clearScreenLoop
 
 	POP	{r4, r5, pc}
 

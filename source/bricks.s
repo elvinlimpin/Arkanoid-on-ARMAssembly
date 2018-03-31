@@ -1,25 +1,5 @@
 .section .text
 
-// r0 - x code
-// r1 - y code
-// r2 - colorCode
-// draws Brick and changes brick state
-.global makeBrick
-makeBrick:
-	PUSH	{r4-r6, lr}
-	MOV	r4, r0
-	MOV	r5, r1
-	MOV	r6, r2
-	BL	codeToTile
-	STRB	r6, [r0]	// store the brick state
-
-	MOV	r0, r4
-	MOV	r1, r5
-	MOV	r2, r6
-	BL	drawBrick
-
-	POP	{r4-r6, lr}
-	MOV	pc, lr
 
 // r0 - brick x position
 // r1 - brick y position
@@ -30,7 +10,7 @@ drawBrick:
 	colorCode	.req	r7
 
 
-	PUSH	{r3-r8, lr}
+	PUSH	{r4-r8, lr}
 	BL	CodeToXY
 
 	MOV	xpos, r0
@@ -67,23 +47,8 @@ drawBrick:
 
 	BL	makeTile
 
-	POP	{r3-r8, lr}
+	POP	{r4-r8, lr}
 	MOV 	pc, lr
-
-
-.global getBrickState
-// takes XY
-// return brick state
-getBrickState:
-       	PUSH    {lr}
-	//convert to brick state
-	BL	XYtoCode
-	BL	codeToTile
-	// return brick state
-	LDRB	r0, [r0]
-        POP	{lr}
-	MOV	pc, lr
-
 
 // params
 // r0 - x coordinate
@@ -97,9 +62,10 @@ hitBrick:
 
 	// store brick state on register
 	BL	XYtoCode
-	MOV	r4, r0
-	MOV	r5, r1
-	BL	codeToTile
+	MOV	r4, r0		// code x
+	MOV	r5, r1		// code y
+
+	BL	codeToTile	// gets the code value
         LDRB	r7, [r0]
 
 	CMP	r7, #0
@@ -114,10 +80,14 @@ hitBrick:
 //	BLGT	specialTile	// not a normal brick, do something
 	MOVGT	r2, #0		// brick is now gone
 
+
 	MOV	r0, r4
 	MOV	r1, r5
-	// r2 is the color
-	BL	makeBrick	// recolor
+	MOV	r6, r2
+	BL	codeToTile
+	STRB	r6, [r0]
+
+	BL	makeAllBricks
 
 	MOV	r0, #1		// brick is hit
 	POP	{r4-r7, lr}
@@ -133,6 +103,44 @@ hitBrick:
 		MOV	r0, #1
 		POP	{lr}
 		MOV	PC, LR
+
+.global makeAllBricks
+makeAllBricks:
+	PUSH	{r4, r5, lr}
+	MOV	r0, #9
+	MOV	r1, #2
+
+	MOV	r4, r0
+	MOV	r5, r1
+
+	getBrickStateLoop:
+		BL	codeToTile
+		LDRB	r0, [r0]
+
+		MOV	r1, r0
+		LDR	r0, =log
+		BL	printf
+
+		CMP	r0, #0
+
+		MOVNE	r2, r0
+		MOVNE	r0, r4
+		MOVNE	r1, r5
+		BLNE	drawBrick
+
+		//check X
+		ADD	r4, r4, #1
+		CMP	r4, #9
+		BLE	getBrickStateLoop
+
+		//check Y
+			ADD	r5, r5, #1
+			CMP	r5, #2
+			MOVLE	r4, #0
+			BLE	getBrickStateLoop
+
+	POP	{r4, r5, lr}
+	MOV	pc, lr
 
 dropBigPaddle:
 	PUSH	{lr}
@@ -174,6 +182,7 @@ XYtoCode:
 
 	MOV r5, #0 //default layer
 	SUB	r1, r1, #64
+
 	yloop:
 	CMP	r1, #32
 	SUB	r1, r1, #32
@@ -183,13 +192,13 @@ XYtoCode:
 
 	MOV	r4, #0 //default start
 	SUB	r0, r0, #36
+
 	xloop:
 	CMP	r0, #64
 	SUB	r0, r0, #64
 	MOVLT	r0, r4
 	ADD	r4,r4, #1
 	BGE	xloop
- 
 
 	POP	{r4,r5, lr}
 	MOV	pc, lr
@@ -439,7 +448,6 @@ checkallbricks:
 	tile19:	.byte	2
 	tile29:	.byte	3
 
-	doTile:	.byte	1
 
 	emptyTile:	.byte	0
 	codeLog:	.asciz	"code: (%d, %d)\n"
