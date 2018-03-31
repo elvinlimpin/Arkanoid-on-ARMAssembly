@@ -202,6 +202,11 @@ XYtoCode:
 // r0 - brickStateAddress
 codeToTile:
 	PUSH	{lr}
+	
+	CMP	r0, #9
+	LDRGT	r0, =emptyTile
+	POPGT	{lr}
+	MOVGT	pc, lr
 
 	CMP	r1, #1
 	BLT	fromZero
