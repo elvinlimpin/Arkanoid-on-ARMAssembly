@@ -22,57 +22,59 @@ main:
 	BL	initSNES
 	BL	Init_Frame
 
-.global menusetup
-menusetup:
-	MOV	r4, #0 			//initial state is 0
-	MOV	r6, #8496		// initial wait is longer
 
-	MOV	r0, r6
-	BL	readSNES
+	.global menusetup
+	menusetup:
+		MOV	r4, #0 			//initial state is 0
+		MOV	r6, #8496		// initial wait is longer
 
-    .global startMenuLoop
-	startMenuLoop:
+		MOV	r0, r6			// pause SNES before reading
+		BL	readSNES
 
-	    	CMP 	r4, #0 //check state
+	    .global startMenuLoop
+		startMenuLoop:
 
-    		MOV 	r1, #720
-    		MOV 	r2, #960
-    		LDREQ	r0, =startselect
-    		LDRNE	r0, =quitselect
+		    	CMP 	r4, #0 //check state
 
-		BL	drawTile
+	    		MOV 	r1, #720
+	    		MOV 	r2, #960
+	    		LDREQ	r0, =startselect		// state determines the screen
+	    		LDRNE	r0, =quitselect
 
-		MOV	r0, r6
-		BL	readSNES //check button press
-		MOV	r6, #3750
+			BL	drawTile
 
-			CMP	r0, #2048		// U
-			MOVEQ 	r4, #0
-			CMP	r0, #1024		// D
-			MOVEQ	r4, #1
-			CMP	r0, #128  		//A
+			MOV	r0, r6
+			BL	readSNES //check button press
+			MOV	r6, #3750
 
-		BNE startMenuLoop
+				CMP	r0, #2048		// U
+				MOVEQ 	r4, #0
+				CMP	r0, #1024		// D
+				MOVEQ	r4, #1
+				CMP	r0, #128  		//A
+
+			BNE startMenuLoop
 
 		//branch based on state
 		CMP	r4, #0
-		BNE	terminate
-		BEQ	makeGame
-	   //insert code to clear screen here
+		BNE	terminate		// clears the screen to quit
+		BEQ	makeGame		// starts the game
+
+
 
 .global terminate
 terminate:				// infinite loop ending program
 	LDR	r0, =msgTerminate
 	BL	printf
 
-    BL blackScreen
+	BL blackScreen
 	haltLoop$:
 		B	haltLoop$
 
 	gBase	.req	r10
 	prevbtn	.req	r9
 
-// logger
+// loggers used for debugging purposes only
 .global $
 $:	PUSH	{r0-r3, lr}
 	LDR	r0, =log$
@@ -85,18 +87,17 @@ $1:	PUSH	{r0-r3, lr}
 	BL	printf
 	POP	{r0-r3, pc}
 
+
 .global pauseMenu
 pauseMenu:
 		PUSH	{r4-r5, lr}
-		MOV	r4, #0
-		MOV	r5, #16384
+		MOV	r4, #0		// state
+		MOV	r5, #16384	// delay for SNES
 
 		MOV	r0, r5
-		BL	readSNES
+		BL	readSNES		// pause SNES reading
 
 	pauseMenuLoop:
-		BL	$
-
 	   	CMP 	r4, #0 //check state
 
     		MOV 	r1, #200
@@ -105,7 +106,7 @@ pauseMenu:
     		LDREQ	r0, =pauserestart
     		LDRNE	r0, =pausequit
 
-		BL	drawCenterTile
+		BL	drawCenterTile		// draws the menu
 		MOV	r0, r5
 		BL	readSNES //check button press
 		MOV	r5, #2048
@@ -131,6 +132,7 @@ pauseMenu:
 		BNE	menusetup	// returns to menu
 		BEQ	makeGame	// restarts the game
 
+// no arguments, void
 clearScreen:
 	PUSH	{r4,r5, lr}
 

@@ -1,4 +1,5 @@
 .global	moveBall
+// no arguments or return values
 moveBall:
 	PUSH	{r4-r5,lr}
 	BL	changeSlope
@@ -9,7 +10,7 @@ moveBall:
 	CMP	r0, #0		// ignore if not launched
 	POPEQ	{r4-r5,pc}
 
-	//going up
+	// slopes going up
 	CMP	r0, #9
 	MOVEQ	r4, #16
 	MOVEQ	r5, #16
@@ -26,7 +27,7 @@ moveBall:
 	MOVEQ	r4, #-8
 	MOVEQ	r5, #16
 
-	//going down
+	// slopes going down
 	CMP	r0, #3
 	MOVEQ	r4, #16
 	MOVEQ	r5, #-16
@@ -56,9 +57,9 @@ moveBall:
 
 	BL	getRidOfBall
 	BL	drawBall
-
 	POP	{r4-r5,pc}
 
+// key method. Changes the course of the ball
 changeSlope:
 	PUSH	{r4-r9, lr}
 
@@ -77,6 +78,7 @@ changeSlope:
 	LDR	r0, =xandy	//for debugging purposes
 //	BL	printf
 
+	// check if walls are hit
 	CMP	r4,#644
 	BLGE	switch45
 
@@ -86,82 +88,79 @@ changeSlope:
 	CMP	r4, #36
 	BLLE	switch45
 
-	CMP	r5, #740
+	CMP	r5, #740		// check if paddle catches the ball
 	BLGE	checkIfCaught
 
-	BL	checkCorners
+	BL	checkCorners		// check if other corners have hit something
 
 	POP	{r4-r9, lr}
 	mov      pc, LR
 
-topleft:
-	push 	{lr}
-	LDR	r0, =curX //top left corner
-	LDR	r0, [r0]
+	topleft:
+		push 	{lr}
+		LDR	r0, =curX //top left corner
+		LDR	r0, [r0]
 
-	LDR	r1, =curY
-	LDR	r1, [r1]
+		LDR	r1, =curY
+		LDR	r1, [r1]
 
-	BL	hitBrick //returns if hit
-        LDR     r1, =scoreCount
-	LDR	r2, [r1]
-        ADD	r2, r2, r0
-	STR	r2, [r1]
-	pop	{lr}
-	MOV	PC, LR
+		BL	hitBrick //returns if hit
+	        LDR     r1, =scoreCount
+		LDR	r2, [r1]
+	        ADD	r2, r2, r0
 
-topright:
-	push 	{lr}
-	LDR	r0, =curX //top right corner
-	LDR	r0, [r0]
-        ADD	r0, r0, #32
+		STR	r2, [r1]
+	POP	{pc}
 
-	LDR	r1, =curY
-	LDR	r1, [r1]
+	topright:
+		PUSH 	{lr}
+		LDR	r0, =curX //top right corner
+		LDR	r0, [r0]
+	        ADD	r0, r0, #32
 
-	BL	hitBrick //returns if hit
-        LDR     r1, =scoreCount
-	LDR	r2, [r1]
+		LDR	r1, =curY
+		LDR	r1, [r1]
 
-      add	r2, r2, r0
-	str	r2, [r1]
-	POP	{lr}
-	mov      pc, LR
+		BL	hitBrick //returns if hit
+        	LDR     r1, =scoreCount
+		LDR	r2, [r1]
 
-bottomleft:
-	push 	{lr}	
-	LDR	r0, =curX //bottom left corner
-	LDR	r0, [r0]
+        	ADD	r2, r2, r0
+		STR	r2, [r1]
+	POP	{pc}
 
-	LDR	r1, =curY
-	LDR	r1, [r1]
-  	ADD	r1, r1, #32
+	bottomleft:
+		PUSH 	{lr}
+		LDR	r0, =curX //bottom left corner
+		LDR	r0, [r0]
 
-	BL	hitBrick
-        LDR     r1, =scoreCount
-	LDR	r2, [r1]
-        ADD	r2, r2, r0
-	STR	r2, [r1]
-	POP	{lr}
-	mov      pc, LR
+		LDR	r1, =curY
+		LDR	r1, [r1]
+	  	ADD	r1, r1, #32
 
-bottomright:
-	push 	{lr}
-	LDR	r0, =curX //bottom right corner
-	LDR	r0, [r0]
-	ADD	r0, r0, #32
+		BL	hitBrick
+	        LDR     r1, =scoreCount
+		LDR	r2, [r1]
+	        ADD	r2, r2, r0
+		STR	r2, [r1]
+	POP	{pc}
 
-	LDR	r1, =curY
-	LDR	r1, [r1]
-  	ADD	r1, r1, #32
+	bottomright:
+		PUSH 	{lr}
+		LDR	r0, =curX //bottom right corner
+		LDR	r0, [r0]
+		ADD	r0, r0, #32
 
-	BL	hitBrick
-        LDR     r1, =scoreCount
-	LDR	r2, [r1]
-        add	r2, r2, r0
-	str	r2, [r1]
-	POP	{lr}
-	mov      pc, LR
+		LDR	r1, =curY
+		LDR	r1, [r1]
+	  	ADD	r1, r1, #32
+
+		BL	hitBrick
+	        LDR     r1, =scoreCount
+		LDR	r2, [r1]
+	        ADD	r2, r2, r0
+		STR	r2, [r1]
+	POP	{pc}
 
 //Does not take or return arguments
 checkCorners: //makes function calls to avoid checking the same brick
@@ -230,15 +229,50 @@ skip:   CMP	r9, #0
 	mov      pc, LR
 
 
+// functions associated with the value pack \\
+
+// paddle catches ball as effect of value pack
+ballIsCaught:
+	PUSH	{lr}
+		LDR	r0, =lifeCount
+		LDR	r1, [r0]
+		ADD	r1, r1, #1
+		STR	r1, [r0]
+
+		LDR	r0, =willCatchBall
+		MOV	r1, #0
+		STR	r1, [r0]
+
+		BL	unlaunch
+	POP	{pc}
+
+
+.global	enableCatchBall
+enableCatchBall:
+	PUSH	{lr}
+
+	LDR	r0, =willCatchBall
+	MOV	r1, #1
+	STR	r1, [r0]
+
+	POP	{pc}
+
+//////////////////////////////////////////////////
+
+
 checkIfCaught:
 	PUSH	{r4-r8, lr}
 
-	LDR	r0, =slopeCode
+	LDR	r0, =willCatchBall	// check if ball will be caught
+	LDR	r0, [r0]
+	CMP	r0, #1
+	BLEQ	ballIsCaught
+	POPEQ	{r4-r8, pc}
+
+	LDR	r0, =slopeCode		// check if ball is launched
 	LDR	r0, [r0]
 	CMP	r0, #0
 	POPEQ	{r4-r8, pc}
-
-	BL	$
 
 	LDR	r0, =curX	// leftbound of ball
 	LDR	r4, [r0]
@@ -256,33 +290,44 @@ checkIfCaught:
 	BLLT	ballDies	// if ball too far right, ball will die
 	POPLT	{r4-r8, pc}
 
-	CMP	r7, r6		// R paddle - L ball
+	CMP	r7, r4		// R paddle - L ball
 	BLLT	ballDies	// if paddle too far right, ball will die
 	POPLT	{r4-r8, pc}
 
 	//checkRightBound
 		SUB	r7, r7, #48	//edge of paddle
-		CMP	r7, r6		// edge of paddle - L ball
-		BLGT	switch45Paddle	// bounce 45
-		POPGT	{r4-r8, pc}
+		CMP	r7, r4		// edge of paddle - L ball
+		BLLT	switch45Paddle	// bounce 45
+		POPLT	{r4-r8, pc}
 
 	//checkLeftBound
 		ADD	r5, r5, #48	// edge of paddle
 		CMP	r6, r5		// R ball - edge of paddle
-		BLLT	switch45Paddle	// bounce 45
-		BLGE	switch60Paddle
+		BLLE	switch45Paddle	// bounce 45
+		BLGT	switch60Paddle
 	POP	{r4-r8, pc}
 
+// unlaunch ball once below the paddle
 ballDies:
-	PUSH	{r4,lr}
+	PUSH	{r4-r5,lr}
 
 	LDR	r4, =slopeCode
 	LDR	r4, [r4]
 
 	CMP	r4, #0
-	BLNE	unlaunch
-	POP	{r4,pc}
+	POPEQ	{r4-r5,pc}
 
+	LDR	r4, =ballWillDie
+	LDR	r5, [r4]
+
+	CMP	r5, #5
+		ADDLT	r5, r5, #1
+		STRLT	r5, [r4]
+		BLEQ	unlaunch
+
+	POP	{r4-r5,pc}
+
+// switch the ball's trajectory to 60 degrees
 switch60:
 	PUSH	{lr}
 	LDR	r0, =slopeCode
@@ -320,6 +365,7 @@ switch60:
 	POP	{pc}
 
 
+// switch the ball's trajectory to 45 degrees
 switch45:
 	PUSH	{lr}
 	LDR	r0, =slopeCode
@@ -352,7 +398,8 @@ switch45:
 	STR	r2, [r0]
 	POP	{pc}
 
-
+// switch the ball's trajectory to 60 degrees
+// that the paddle causes
 switch60Paddle:
 	PUSH	{lr}
 
@@ -365,8 +412,13 @@ switch60Paddle:
 
 	LDR	r0, =slopeCode
 	LDR	r1, [r0]
+	MOV	r2, r1
 
-	MOV	r2, #87
+	CMP	r1, #1
+	MOVEQ	r2, #87
+
+	CMP	r1, #21
+	MOVEQ	r2, #87
 
 	CMP	r1, #3
 	MOVEQ	r2, #89
@@ -377,6 +429,8 @@ switch60Paddle:
 	STR	r2, [r0]
 	POP	{pc}
 
+// switch the ball's trajectory to 45 degrees
+// when caused by the paddle
 switch45Paddle:
 	PUSH	{lr}
 
@@ -389,8 +443,13 @@ switch45Paddle:
 
 	LDR	r0, =slopeCode
 	LDR	r1, [r0]
+	MOV	r2, r1
 
-	MOV	r2, #7
+	CMP	r1, #1
+	MOVEQ	r2, #7
+
+	CMP	r1, #21
+	MOVEQ	r2, #7
 
 	CMP	r1, #3
 	MOVEQ	r2, #9
@@ -412,3 +471,5 @@ switch45Paddle:
 
 	.global	ballWillDie
 	ballWillDie:	.byte	0
+
+	willCatchBall:	.int	0

@@ -16,7 +16,6 @@
 // r2 - color
 // r3 - length
 // r4 - xLength (height)
-
 .global makeTile
 makeTile:
 	length	.req 	r3
@@ -191,23 +190,21 @@ blackScreen:
 	PUSH {r4, r5, lr}
 	MOV r4, #0
 	MOV r5, #0
+
 drawblackscreen:
-    MOV r0, r4
-    MOV r1, r5
-    MOV r2, #0
-    bl	drawPx
-    
-    add	r4, r4, #1
-    CMP r4, #720
-    MOVEQ	r4, #0
-    
-    ADDEQ r5, r5, #1
-    
+	MOV	r0, r4
+	MOV	r1, r5
+	MOV	r2, #0
+	BL	drawPx
+
+	ADD	r4, r4, #1
+    	CMP 	r4, #720
+    		MOVEQ	r4, #0
+   	 	ADDEQ r5, r5, #1
+
     CMP   r5, #960
     BLT drawblackscreen
-    
-    pop {r4,r5, pc}
-	
+    POP {r4,r5, pc}
 
 
 

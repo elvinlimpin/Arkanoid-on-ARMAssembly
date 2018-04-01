@@ -26,6 +26,11 @@
 
 		POP	{pc}
 
+// params:
+// r0 - delay
+// returns:
+// r0 - code for button pressed
+
 .global readSNES
 	readSNES:
 		PUSH	{r6-r8, lr}
@@ -79,6 +84,8 @@
 	.unreq	inc
 	.unreq	btns
 
+// converts to button code
+// code is not used but is only for debugging purposes
 .global	getButton
 	getButton:
 		PUSH	{r4,lr}

@@ -36,6 +36,7 @@ initLives:
 updateScoreAndLives:
 	PUSH	{r4, lr}
 
+	// black out positions
 	MOV	r0, #160
 	MOV	r1, #863
 	MOV	r2, #0x0
@@ -50,34 +51,38 @@ updateScoreAndLives:
 	MOV	r4, r3
 	BL	makeTile
 
+	// write digits
+
 	LDR	r0, =scoreCount
 	BL	intToString	// r0 - first digit
 	MOV	r4, r1		// r1 - second digit
 
-	MOV	r1, #165
-	MOV	r2, #864
-	BL	drawChar
+		MOV	r1, #165
+		MOV	r2, #864
+		BL	drawChar
 
-	MOV	r0, r4
-	MOV	r1, #176
-	MOV	r2, #864
-	BL	drawChar
+		MOV	r0, r4
+		MOV	r1, #176
+		MOV	r2, #864
+		BL	drawChar
 
 	LDR	r0, =lifeCount
 	BL	intToString	// r0 - first digit
 	MOV	r4, r1		// r1 - second digit
 
-	MOV	r1, #545
-	MOV	r2, #864
-	BL	drawChar
+		MOV	r1, #545
+		MOV	r2, #864
+		BL	drawChar
 
-	MOV	r0, r4
-	MOV	r1, #556
-	MOV	r2, #864
-	BL	drawChar
-
+		MOV	r0, r4
+		MOV	r1, #556
+		MOV	r2, #864
+		BL	drawChar
 	POP	{r4, pc}
 
+// changes intger to string for printing
+// params: r0 - location of the integer
+// returns: r0 - string code
 intToString:
 	PUSH	{r4, r5, lr}
 	LDR	r0, [r0]
@@ -94,7 +99,7 @@ intToString:
 
 	POP	{r4, r5, pc}
 
-
+// behavior for when score is 0
 .global LOST
 LOST:
 	BL	updateScoreAndLives
@@ -107,6 +112,7 @@ LOST:
 	BL      drawCenterTile
 	B	anybutton
 
+// behavior for win condition
 .global WIN
 WIN:
 	BL	updateScoreAndLives
@@ -118,6 +124,7 @@ WIN:
 	B	anybutton
 
 
+// reiniitializes game vairables
 .global	resetScore
 resetScore:
 	PUSH	{lr}
@@ -148,6 +155,8 @@ resetScore:
 	LDR	r0, =curY
 	STR	r1, [r0]
 
+
+	BL	resetValuePacks
 	POP	{pc}
 .data
 	scoreChar:	.asciz		"SCORE: "

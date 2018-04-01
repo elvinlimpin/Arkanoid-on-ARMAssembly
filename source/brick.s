@@ -13,6 +13,7 @@ makeBrick:
 	BL	codeToTile
 	STRB	r6, [r0]	// store the brick state
 
+	// then draw brick
 	MOV	r0, r4
 	MOV	r1, r5
 	MOV	r2, r6
@@ -22,6 +23,8 @@ makeBrick:
 	MOV	pc, lr
 
 
+// sets the bricks for the initial state
+// no params or return values
 .global	initBricks
 initBricks:
 	PUSH	{r4-r6, lr}
@@ -56,8 +59,7 @@ initBricks:
 			MOVLT	r4, #0
 			BLT	initBrickStateLoop
 
-	POP	{r4-r6, lr}
-	MOV	PC, LR
+	POP	{r4-r6, pc}
 
 
 // r0 - brick x position
@@ -106,8 +108,7 @@ drawBrick:
 
 	BL	makeTile
 
-	POP	{r3-r8, lr}
-	MOV 	pc, lr
+	POP	{r3-r8, pc}
 
 
 // params
@@ -374,6 +375,8 @@ codeToTile:
 		POP	{lr}
 		MOV	pc, lr
 
+// redraws all the bricks without
+// modifying the states of the bricks
 .global	makeAllBricks
 makeAllBricks:
 	PUSH	{r4-r6, lr}
@@ -428,16 +431,14 @@ checkallbricks:
 	MOV r0, #1
         POP {r4, r5, lr}
 	MOV pc, lr
-	
 
+.section	.data
 
 // 0 - broken
 // 1 - 1 hits to break
 // 2 - 2 hits to break
 // 3 - 3 hit to break
-// 4 - special brick 1
-// 5 - special brick 2
-.section	.data
+
 
 	tile0:	.byte	1
 	tile10:	.byte 	2
@@ -467,6 +468,8 @@ checkallbricks:
 
 	tile6:	.byte	1
 	tile16:	.byte	2
+
+	.global	tile26
 	tile26:	.byte	3
 
 	tile7:	.byte	1
@@ -480,7 +483,6 @@ checkallbricks:
 	tile9:	.byte	1
 	tile19:	.byte	2
 
-	.global tile29
 	tile29:	.byte	3
 
 	doTile:	.byte	1

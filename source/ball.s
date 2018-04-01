@@ -1,3 +1,4 @@
+
 .global drawBall
 drawBall:
 	PUSH	{r4-r6, lr}
@@ -26,6 +27,7 @@ drawBall:
 
 	POP	{r4-r6, pc}
 
+// no params or return values
 .global initBall
 initBall:
 	PUSH	{r4-r6,lr}
@@ -42,6 +44,8 @@ initBall:
 
 	POP	{r4-r6, pc}
 
+// removes ball
+// no params or return values
 .global	getRidOfBall
 getRidOfBall:
 	PUSH	{r4-r5, lr}
@@ -57,19 +61,20 @@ getRidOfBall:
 	MOV	r2, #0x0
 	BL	makeTile
 
-	LDR	r4, =curX
-	LDR	r4, [r4]
-	LDR	r5, =prevX
-	STR	r4, [r5]
+	// update ball location
+		LDR	r4, =curX
+		LDR	r4, [r4]
+		LDR	r5, =prevX
+		STR	r4, [r5]
 
-	LDR	r4, =curY
-	LDR	r4, [r4]
-	LDR	r5, =prevY
-	STR	r4, [r5]
+		LDR	r4, =curY
+		LDR	r4, [r4]
+		LDR	r5, =prevY
+		STR	r4, [r5]
 
 	POP	{r4-r5, pc}
 
-
+// launches the ball
 .global launchBall
 launchBall:
 	PUSH	{r4-r7,lr}
@@ -87,6 +92,7 @@ launchBall:
 
 	POP	{r4-r7,pc}
 
+// inner function for launch ball
 launch:
 	PUSH	{lr}
 
@@ -99,17 +105,24 @@ launch:
 .global unlaunch
 unlaunch:
 	PUSH	{lr}
+
+	LDR	r0, =ballWillDie
+	MOV	r1, #1
+	STR	r1, [r0]
+
 	LDR	r0, =slopeCode
 	MOV	r1, #0
 	STR	r1, [r0]
 
 	BL	getRidOfBall
 
+	// decrement life
 	LDR	r1, =lifeCount
 	LDR	r0, [r1]
 	SUB	r0, r0, #1
 	STR	r0, [r1]
 
+	// move ball location
 	LDR	r0, =curY
 	LDR	r1, =prevY
 	MOV	r2, #740
@@ -129,6 +142,7 @@ unlaunch:
 	POP	{pc}
 
 
+// return if ball is launched
 .global	isLaunched
 isLaunched:
 	PUSH	{lr}

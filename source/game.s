@@ -4,130 +4,143 @@
 makeGame:
 	BL	resetScore
 
-	MOV	r0, #4
-	MOV	r1, #4
-	MOV	r2, #0x007770
-	MOV	r3, #704
-	MOV	r4, #944
-	BL	makeTile
+		// draw background
+		MOV	r0, #4
+		MOV	r1, #4
+		MOV	r2, #0x007770
+		MOV	r3, #704
+		MOV	r4, #944
+		BL	makeTile
 
 
-	// foreground
-	MOV	r0, #36
-	MOV	r1, #36
-	MOV	r2, #0x0
-	MOV	r3, #640
-	MOV	r4, #880
-	BL	makeTile
+		// foreground
+		MOV	r0, #36
+		MOV	r1, #36
+		MOV	r2, #0x0
+		MOV	r3, #640
+		MOV	r4, #880
+		BL	makeTile
 
-	BL	initScore
-	BL	initLives
-	BL	initBricks
+		// initialize game mechanics
+		BL	initScore
+		BL	initLives
+		BL	initBricks
 
-	LDR	r0, =paddlePosition
-	MOV	r1, #228
-	STR	r1, [r0]
+		LDR	r0, =paddlePosition
+			MOV	r1, #228
+			STR	r1, [r0]
 
-	BL	paddle
-	B	LOST
+		BL	paddle	// when done from paddle loop, game is lsot
+		B	LOST
+
 
 paddle:
 	PUSH	{r4-r9, lr}
 
-	LDR	r8, =paddleStart // default xstart
-	LDR	r8, [r8]
-	MOV	r0, r8
-	BL	initBall
+	LDR	r8, =paddleStart // default xstart for paddle
+		LDR	r8, [r8]
+		MOV	r0, r8
 
 	MOV	r4, #32		//default size of the paddle
 	MOV	r7, #1500	// pause length
+	BL	initBall
 
 	paddleLoop:
+
+		// branch to other game mechanics
 		BL	maybeMoveBall
 		BL	dropListener
 		BL	makeAllBricks
+		BL	fixWalls
+		BL	updateScoreAndLives
 
 		//ensure padde is fully drawn
 		LDR	r6, =paddleBound
 		LDR	r0, [r6]
 
-		//paddle
- 		ADD	r0, r8, #32
-		MOV	r1, #774
-		MOV	r2, #0x8800000
-		LDR	r3, =paddleSize
-		LDR	r3, [r3]
-		SUB	r3, r3, #64
-		BL	makeTile
+			//paddle
+	 		ADD	r0, r8, #32
+			MOV	r1, #774
+			MOV	r2, #0x8800000
+			LDR	r3, =paddleSize
+			LDR	r3, [r3]
+			SUB	r3, r3, #64
+			BL	makeTile
 
-		MOV	r0, r8
-		MOV	r1, #774
-		MOV	r2, #0x330000
-		MOV	r3, #32
-		BL	makeTile
+			//left edge of paddle
+			MOV	r0, r8
+			MOV	r1, #774
+			MOV	r2, #0x330000
+			MOV	r3, #32
+			BL	makeTile
 
-		LDR	r0, =paddleSize
-		LDR	r0, [r0]
-		ADD	r0, r0, r8
-		SUB	r0, #32
-		MOV	r1, #774
-		MOV	r2, #0x330000
-		MOV	r3, #32
-		BL	makeTile
+			// right edge of paddle
+			LDR	r0, =paddleSize
+			LDR	r0, [r0]
+			ADD	r0, r0, r8
+			SUB	r0, #32
+			MOV	r1, #774
+			MOV	r2, #0x330000
+			MOV	r3, #32
+			BL	makeTile
 
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
 
-		// check if won or lost
+		// check if game is won
 		BL	checkGameWon //check if game has been won
         	CMP	r0, #1
 		POPEQ	{r4-r9, lr}
         	BEQ	WIN
 
+		// branch out of game for lose implementation
         	LDR	r0, =lifeCount
         	LDR 	r0, [r0]
         	CMP	r0, #0
 		POPEQ	{r4-r9, pc}
 
-		BL	updateScoreAndLives
+
+		//Reading SNES buttons
+
 		MOV	r0, r7			// delay
 		BL	readSNES
 		MOV	r7, #1500
 
-		CMP	r0, #4096		// start
-		BLEQ	pauseMenu
+			CMP	r0, #4096		// start
+			BLEQ	pauseMenu
 
-		CMP	r0, #32768		// B
-		BLEQ	launchBall
+			CMP	r0, #32768		// B
+			BLEQ	launchBall
 
-		CMP	r0, #16384
-		BLEQ	bigPaddle
+			CMP	r0, #16384		// Y - testing purposes only
+//			BLEQ	testBall
 
-		CMP	r0, #512		// L
-		BEQ	moveLeft
-		CMP	r0, #256		// R
-		BEQ	moveRight
+			CMP	r0, #512		// L
+			BEQ	moveLeft
 
-		CMP	r0, #640		// L + A
-		MOVEQ	r7, #750
-		BEQ	moveLeft
+			CMP	r0, #256		// R
+			BEQ	moveRight
 
-		CMP	r0, #384		// R + A
-		MOVEQ	r7, #750
-		BNE	paddleLoop
-		BEQ	moveRight
+			CMP	r0, #640		// L + A
+			MOVEQ	r7, #750
+			BEQ	moveLeft
 
-		CMP	r0, #128		//A
-		MOVEQ	r7, #750
+			CMP	r0, #384		// R + A
+			MOVEQ	r7, #750
+			BNE	paddleLoop
+			BEQ	moveRight
+
+			CMP	r0, #128		//A
+			MOVEQ	r7, #750
 
 		moveRight:
+			// get the size of the paddle
+			LDR	r6, =paddleBound
+			LDR	r0, [r6]
+			CMP	r8, r0
+			BGE	paddleLoop
 
-		LDR	r6, =paddleBound
-		LDR	r0, [r6]
-		CMP	r8, r0
-		BGE	paddleLoop
-
-				//repaint
+				//repaint black where the paddle isn't
 				MOV	r0, r8
 				MOV	r1, #774
 				MOV	r2, #0x0
@@ -135,13 +148,14 @@ paddle:
 				MOV	r4, #32
 				BL	makeTile
 
+				// change the paddle position
 				ADD	r8, r8, #32
 				LDR	r6, =paddlePosition
 				STR	r8, [r6]
 				MOV	r0, r8
-			BL	initBall
 
-		B	paddleLoop
+			BL	initBall
+			B	paddleLoop
 
 		moveLeft:
 			CMP	r8, #36
@@ -153,21 +167,26 @@ paddle:
 				SUB	r0, r0, #32
 				ADD	r0, r8
 
+				//repaint black where the paddle isn't
 				MOV	r1, #774
 				MOV	r2, #0x0
 				MOV	r3, #32
 				BL	makeTile
 
+				// change the paddle position
 				SUB	r8,r8, #32
 				LDR	r6, =paddlePosition
 				STR	r8, [r6]
 				MOV	r0, r8
-				BL	initBall
 
+			BL	initBall
 			B	paddleLoop
 
+// checks if ball will be moved
+// no parameters or return value
 maybeMoveBall:
 	PUSH	{r4,r5, lr}
+
 	LDR	r0, =willMoveBall
 	LDR	r1, [r0]
 	MOV	r4, r0
@@ -175,24 +194,22 @@ maybeMoveBall:
 	CMP	r1, #0
 	BEQ	moveBallLoop
 
-	MOV	r5, #1414
-	CMP	r7, r5
+	MOV	r5, #1414		// if A is held, the delay (r5) should be less than 1414
+	CMP	r7, r5			// so move the ball slower
 	BGE	moveBallLoop
 
-	MOV	r1, #0
+	MOV	r1, #0			// ball not moved
 	STR	r1, [r0]
-	POP	{r4,r5,lr}
-	MOV	PC,lr
+	POP	{r4,r5,pc}
 
-	moveBallLoop:
+	moveBallLoop:			// bakl moved
 		BL	moveBall
 		MOV	r1, #1
 		MOV	r0, r4
 		STR	r1, [r0]
-		POP	{r4,r5,lr}
-		MOV	PC, LR
+		POP	{r4,r5,pc}
 
-.global anybutton
+.global anybutton		// read any button (for the game over screen)
 anybutton:
 	MOV	r0, #8192
         BL 	readSNES
@@ -201,7 +218,7 @@ anybutton:
 	B	anybutton
 
 .global bigPaddle
-bigPaddle:
+bigPaddle:			// change paddle size to big paddle
 	PUSH	{lr}
 	BL	drawInitialPaddle
 
@@ -218,32 +235,6 @@ bigPaddle:
 	STR	r1, [r0]
 
 	POP	{pc}
-
-.global smallPaddle
-smallPaddle:
-	PUSH	{lr}
-
-	BL	clearPaddle
-	BL	drawInitialPaddle
-
-	LDR	r0, =paddleSize
-	MOV	r1, #192
-	STR	r1, [r0]
-
-	LDR	r0, =paddleStart
-	MOV	r1, #228
-	STR	r1, [r0]
-
-	LDR	r0, =paddleBound
-	MOV	r1, #484
-	STR	r1, [r0]
-
-	LDR	r0, =paddlePosition
-	MOV	r1, #228
-	STR	r1, [r0]
-
-	POP	{lr}
-	MOV	PC, LR
 
 drawInitialPaddle:
 	PUSH	{r4, lr}
@@ -277,6 +268,27 @@ clearPaddle:
 	BL	makeTile
 	POP	{lr}
 	MOV	PC, LR
+
+
+// ensures walls are not written over
+fixWalls:
+	PUSH	{r4,lr}
+
+	MOV	r0, #4
+	MOV	r1, #36
+	MOV	r2, #0x007770
+	MOV	r3, #31
+	MOV	r4, #816
+	BL	makeTile
+
+	MOV	r0, #677
+	MOV	r1, #36
+	MOV	r2, #0x007770
+	MOV	r3, #31
+	MOV	r4, #816
+	BL	makeTile
+
+	POP	{r4,pc}
 
 .section	.data
 
