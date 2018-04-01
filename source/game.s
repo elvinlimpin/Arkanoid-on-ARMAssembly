@@ -34,13 +34,12 @@ makeGame:
 paddle:
 	PUSH	{r4-r9, lr}
 
-	BL	drawInitialPaddle
 	LDR	r8, =paddleStart // default xstart
 	LDR	r8, [r8]
 	MOV	r0, r8
 	BL	initBall
 
-
+	MOV	r4, #32		//default size of the paddle
 	MOV	r7, #1500	// pause length
 
 	paddleLoop:
@@ -53,11 +52,27 @@ paddle:
 		LDR	r0, [r6]
 
 		//paddle
- 		MOV	r0, r8
+ 		ADD	r0, r8, #32
 		MOV	r1, #774
 		MOV	r2, #0x8800000
 		LDR	r3, =paddleSize
 		LDR	r3, [r3]
+		SUB	r3, r3, #64
+		BL	makeTile
+
+		MOV	r0, r8
+		MOV	r1, #774
+		MOV	r2, #0x330000
+		MOV	r3, #32
+		BL	makeTile
+
+		LDR	r0, =paddleSize
+		LDR	r0, [r0]
+		ADD	r0, r0, r8
+		SUB	r0, #32
+		MOV	r1, #774
+		MOV	r2, #0x330000
+		MOV	r3, #32
 		BL	makeTile
 
 		LDR	r8, =paddlePosition
@@ -85,8 +100,8 @@ paddle:
 		CMP	r0, #32768		// B
 		BLEQ	launchBall
 
-//		CMP	r0, #16384		// Y
-//		BLEQ	bigPaddleDrop
+		CMP	r0, #16384
+		BLEQ	bigPaddle
 
 		CMP	r0, #512		// L
 		BEQ	moveLeft
@@ -120,15 +135,6 @@ paddle:
 				MOV	r4, #32
 				BL	makeTile
 
-				//paddle
- 				MOV	r0, r8
-				ADD	r0, r0, #32
-				MOV	r1, #774
-				MOV	r2, #0x8800000
-				LDR	r3, =paddleSize
-				LDR	r3, [r3]
-				BL	makeTile
-
 				ADD	r8, r8, #32
 				LDR	r6, =paddlePosition
 				STR	r8, [r6]
@@ -150,14 +156,6 @@ paddle:
 				MOV	r1, #774
 				MOV	r2, #0x0
 				MOV	r3, #32
-				BL	makeTile
-
-				//paddle
-				MOV	r0, r8
-				SUB	r0, r0, #32
-				MOV	r1, #774
-				MOV	r2, #0x8800000
-				MOV	r3, #192
 				BL	makeTile
 
 				SUB	r8,r8, #32
@@ -248,7 +246,7 @@ smallPaddle:
 	MOV	PC, LR
 
 drawInitialPaddle:
-	PUSH	{lr}
+	PUSH	{r4, lr}
 
 	// init Paddle
 	MOV	r0, #228	// x
@@ -258,8 +256,14 @@ drawInitialPaddle:
 	MOV	r4, #32		// height
 	BL	makeTile
 
-	POP	{LR}
-	MOV	PC, LR
+	MOV	r0, #228
+	MOV	r1, #774
+	MOV	r2, #0x330000
+	MOV	r3, #32
+	MOV	r4, r3
+	BL	makeTile
+
+	POP	{r4, pc}
 
 
 .global	clearPaddle

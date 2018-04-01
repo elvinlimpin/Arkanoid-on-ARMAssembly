@@ -155,6 +155,7 @@ CodeToXY:
 
 // r0 r1 - xy position
 // returns r0 r1 - xy code
+.global XYtoCode
 XYtoCode:
 	PUSH	{r4,r5,lr}
 
@@ -203,6 +204,11 @@ XYtoCode:
 // r0 - brickStateAddress
 codeToTile:
 	PUSH	{lr}
+
+	CMP	r0, #9
+	LDRGT	r0, =emptyTile //error check first value
+	POPGT	{lr}
+	MOVGT	pc, lr
 
 	CMP	r1, #1
 	BLT	fromZero

@@ -72,23 +72,26 @@ getRidOfBall:
 
 .global launchBall
 launchBall:
-	PUSH	{r4-r7, lr}
+	PUSH	{r4-r7,lr}
 
 	BL	isLaunched		// if already launched, ignore
 	CMP	r0, #1
-	POPEQ	{r4-r7, pc}
+	POPEQ	{r4-r7,pc}
+
+	LDR	r0, =ballWillDie
+	MOV	r1, #0
+	STRB	r1, [r0]
 
 	BL	getRidOfBall
 	BL	launch
 
-	POP	{r4-r7, pc}
+	POP	{r4-r7,pc}
 
-.global launch
 launch:
 	PUSH	{lr}
 
 	LDR	r0, =slopeCode
-	MOV	r1, #23	// 60 up right
+	MOV	r1, #87	// 60 up right
 	STRB	r1, [r0]
 
 	POP	{pc}
