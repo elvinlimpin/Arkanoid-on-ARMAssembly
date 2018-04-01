@@ -10,7 +10,7 @@ dropListener:
 
 	MOV	r1, r0
 	LDR	r0, =log
-	BL	printf
+//	BL	printf
 
 	CMP	r4, #1
 	BLT	state0
@@ -109,7 +109,7 @@ checkPaddleDrop:
 	// if paddle is 88 from the left
 	CMP	r0, #88
 	BLE	bigPaddle	// change paddle to big paddle
-	BLE	resetDropState
+	//BLE	resetDropState
 	POP	{pc}
 
 .global dropSlowBall
@@ -133,4 +133,4 @@ dropSlowBall:
 	// 2 - right is dropping
 	// 3 - both is dropping
 	// 4 - left is finished. right is
-	dropStateFlag:		.int	1
+	dropStateFlag:		.int	0

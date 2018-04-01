@@ -46,6 +46,19 @@ paddle:
 	paddleLoop:
 		BL	maybeMoveBall
 		BL	dropListener
+		BL	makeAllBricks
+
+		//ensure padde is fully drawn
+		LDR	r6, =paddleBound
+		LDR	r0, [r6]
+
+		//paddle
+ 		MOV	r0, r8
+		MOV	r1, #774
+		MOV	r2, #0x8800000
+		LDR	r3, =paddleSize
+		LDR	r3, [r3]
+		BL	makeTile
 
 		LDR	r8, =paddlePosition
 		LDR	r8, [r8]
@@ -54,7 +67,6 @@ paddle:
 		BL	checkGameWon //check if game has been won
         	CMP	r0, #1
 		POPEQ	{r4-r9, lr}
-		MOVEQ	pc, lr
         	BEQ	WIN
 
         	LDR	r0, =lifeCount

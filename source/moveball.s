@@ -79,8 +79,8 @@ changeSlope:
 	LDR	r3, [r3]
 	MOV	r6, r3
 
-	LDR	r0, =xandy
-	BL	printf
+	LDR	r0, =xandy	//for debugging purposes
+//	BL	printf
 
 	CMP	r5, #740
 	BLGE	checkIfCaught
@@ -117,8 +117,8 @@ changeSlope:
 	BL	hitBrick
         LDR     r1, =scoreCount
 	LDR	r2, [r1]
-        add	r2, r2, r0
-	str	r2, [r1]
+        ADD	r2, r2, r0
+	STR	r2, [r1]
 	ORR	r9, r9, r0
 
 	LDR	r0, =curX //bottom left corner
@@ -157,49 +157,62 @@ changeSlope:
 
 
 checkIfCaught:
-	PUSH	{lr}
+	PUSH	{r4,r5,lr}
 
 	LDR	r0, =curX		// get ball x
 	LDR	r0, [r0]
+	MOV	r4, r0
+
 
 	LDR	r1, =paddlePosition	// get paddle X (left bound)
 	LDR	r1, [r1]
-	ADD	r1, #32
+	MOV	r5, r1
+
+	LDR	r0, =slopeCode
+	LDR	r0, [r0]
+	CMP	r0, #0
+
+		LDRNE	r0, =ballAndPaddle
+		MOVNE	r1, r4
+		MOVNE	r2, r5
+		BLNE	printf
+
+	MOV	r0, r4
+	MOV	r1, r5
 
 	CMP	r0, r1			// if not caught, check extended paddle range
-	MOVLT	r2, #0
-	BLLT	checkExtendedPaddle	// for 45 degree launch
-	POPLT	{pc}
+	BLLT	checkPaddleLeft		// for 45 degree launch
+	POPLT	{r4,r5,pc}
 
 	LDR	r2, =paddleSize		// get end of paddle
 	LDR	r2, [r2]		// right bound
 
 	ADD	r1, r1, r2		// get unextended paddle range
-	SUB	r1, r1, #32
 
 	CMP	r0, r1
-	MOVGT	r2, #1
-	BLGT	checkExtendedPaddle
+	BLGT	checkPaddleRight
 	BLLE	switch60
 
-	POP	{pc}
+	POP	{r4,r5,pc}
 
 // r0 - ball x
 // r1 - paddle x
-// r2 - left or right side?
-checkExtendedPaddle:
+checkPaddleLeft:
 	PUSH	{lr}
 
-	CMP	r2, #0		// is this the left side or the right side?
-	SUBEQ	r1, r1, #64
-	ADDNE	r1, r1, #64
+	ADD	r0, r0, #64
+	CMP	r0, r1
+		BLGT	switch45Paddle
+		BLLE	ballDies
+	POP	{pc}
 
-	CMPEQ	r0, r1		// right side, r0 has to be greater
-	CMPNE	r1, r0		// left side, r1 has to be greater
+checkPaddleRight:
+	PUSH	{lr}
 
-	BLGT	switch45Paddle
-	BLLT	ballDies
-
+	ADD	r1, r1, #64
+	CMP	r0, r1
+		BLGE	ballDies
+		BLLT	switch45Paddle
 	POP	{pc}
 
 
@@ -283,6 +296,8 @@ switch45:
 
 switch45Paddle:
 	PUSH	{lr}
+	BL	$
+
 	LDR	r0, =slopeCode
 	LDR	r1, [r0]
 	MOV	r2, #0
@@ -309,3 +324,4 @@ switch45Paddle:
 	illegalSlope:	.asciz	"here"
 	xandy:		.asciz	"x: %d y: %d slope: %d\n"
 
+	ballAndPaddle:	.asciz	"ball: %d, paddle: %d\n"

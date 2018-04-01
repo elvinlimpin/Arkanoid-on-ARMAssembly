@@ -109,14 +109,13 @@ LOST:
 
 .global WIN
 WIN:
-        PUSH    {lr}
 	BL	updateScoreAndLives
 
 	LDR	r0,=gamewon
         MOV	r1, #200
 	MOV	r2, #200
 	BL      drawCenterTile
-	POP	{pc}
+	B	anybutton
 
 
 .global	resetScore
