@@ -222,6 +222,7 @@ checkCorners: //makes function calls to avoid checking the same brick
 	BEQ	skip
 
 	BL	bottomright
+	ORR	r9, r9, r0
 
 	
 	//label if bottom right doesn't need to be checked
