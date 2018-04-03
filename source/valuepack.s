@@ -37,15 +37,13 @@ dropListener:
 
 ballTileBroken:
 	PUSH	{r4-r6,lr}
-
 	MOV	r5, #1
 
 	LDR	r0, =tile26
 	LDRB	r6, [r0]
 
 	CMP	r6, #0
-		LDREQ	r0, =ballDropState
-		STREQ	r5, [r0]
+		BLEQ	testBall
 
 	POP	{r4-r6,pc}
 

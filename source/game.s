@@ -26,6 +26,9 @@ makeGame:
 		BL	initLives
 		BL	initBricks
 
+
+		BL	smallPaddle
+
 		LDR	r0, =paddlePosition
 			MOV	r1, #228
 			STR	r1, [r0]
@@ -113,7 +116,7 @@ paddle:
 			BLEQ	launchBall
 
 			CMP	r0, #16384		// Y - testing purposes only
-//			BLEQ	testBall
+			BLEQ	testBall
 
 			CMP	r0, #512		// L
 			BEQ	moveLeft
@@ -235,6 +238,26 @@ bigPaddle:			// change paddle size to big paddle
 	STR	r1, [r0]
 
 	POP	{pc}
+
+.global	smallPaddle
+smallPaddle:
+	PUSH	{lr}
+	BL	drawInitialPaddle
+
+	LDR	r0, =paddleSize
+	MOV	r1, #192
+	STR	r1, [r0]
+
+	LDR	r0, =paddleStart
+	MOV	r1, #228
+	STR	r1, [r0]
+
+	LDR	r0, =paddleBound
+	MOV	r1, #484
+	STR	r1, [r0]
+
+	POP	{pc}
+
 
 drawInitialPaddle:
 	PUSH	{r4, lr}

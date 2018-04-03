@@ -203,6 +203,7 @@ XYtoCode:
 
 // return
 // r0 - brickStateAddress
+.global codeToTile
 codeToTile:
 	PUSH	{lr}
 
